@@ -1,0 +1,10 @@
+{"id": "uqa_001", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا قومی ترانہ کس نے لکھا؟", "reference": "حفیظ جالندھری", "metadata": {"provenance": "development sample; NOT an official benchmark; NOT suitable for scientific claims"}}
+{"id": "uqa_002", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا سب سے اونچا پہاڑ کون سا ہے؟", "reference": ["کے ٹو", "K2", "کے-ٹو"], "metadata": {"provenance": "development sample"}}
+{"id": "uqa_003", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا قومی کھیل کیا ہے؟", "reference": "ہاکی", "metadata": {"provenance": "development sample"}}
+{"id": "uqa_004", "task": "qa", "language": "ur", "script": "urdu", "prompt": "علامہ اقبال کا مزار کس شہر میں واقع ہے؟", "reference": "لاہور", "metadata": {"provenance": "development sample"}}
+{"id": "uqa_005", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا دارالحکومت اسلام آباد سے پہلے کون سا شہر تھا؟", "reference": "کراچی", "metadata": {"provenance": "development sample"}}
+{"id": "uqa_006", "task": "qa", "language": "ur", "script": "urdu", "prompt": "دریائے سندھ کس سمندر میں گرتا ہے؟", "reference": ["بحیرہ عرب", "بحیرہٴ عرب"], "metadata": {"provenance": "development sample"}}
+{"id": "uqa_007", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا سب سے بڑا صوبہ آبادی کے لحاظ سے کون سا ہے؟", "reference": "پنجاب", "metadata": {"provenance": "development sample"}}
+{"id": "uqa_008", "task": "qa", "language": "ur", "script": "urdu", "prompt": "پاکستان کا سب سے بڑا صوبہ رقبے کے لحاظ سے کون سا ہے؟", "reference": "بلوچستان", "metadata": {"provenance": "development sample"}}
+{"id": "uqa_009", "task": "qa", "language": "ur", "script": "urdu", "prompt": "قائداعظم محمد علی جناح کی تاریخ پیدائش کیا ہے؟", "reference": ["25 دسمبر", "25 دسمبر 1876", "۲۵ دسمبر"], "metadata": {"provenance": "development sample"}}
+{"id": "uqa_010", "task": "qa", "language": "ur", "script": "urdu", "prompt": "اردو زبان کا رسم الخط کون سا ہے؟", "reference": ["نستعلیق", "فارسی عربی", "عربی"], "metadata": {"provenance": "development sample"}}
