@@ -1,0 +1,137 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "urdu-eval"
+dynamic = ["version"]
+description = "Measure how well AI understands Urdu. Open evaluation infrastructure for Urdu and Roman Urdu AI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+keywords = ["nlp", "urdu", "roman-urdu", "llm-evaluation", "benchmark", "ai", "pakistan"]
+authors = [
+    { name = "UrduEval Contributors", email = "contributors@urdueval.org" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: Urdu",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "pydantic>=2.5.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+    "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.18.0"]
+hf = ["transformers>=4.36.0", "torch>=2.0.0"]
+ollama = ["ollama>=0.1.0"]
+all = [
+    "openai>=1.0.0",
+    "anthropic>=0.18.0",
+    "transformers>=4.36.0",
+    "torch>=2.0.0",
+    "ollama>=0.1.0",
+]
+
+[project.scripts]
+urdu-eval = "urdu_eval.cli:app"
+urdueval = "urdu_eval.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/urdu-eval/urdu-eval"
+Documentation = "https://github.com/urdu-eval/urdu-eval#readme"
+Repository = "https://github.com/urdu-eval/urdu-eval.git"
+Issues = "https://github.com/urdu-eval/urdu-eval/issues"
+Changelog = "https://github.com/urdu-eval/urdu-eval/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/urdu_eval/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/urdu_eval"]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+    "mypy>=1.8.0",
+    "types-PyYAML>=6.0.0",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "pytest --cov=src/urdu_eval --cov-report=term-missing {args:tests}"
+cov = "test-cov"
+lint = "ruff check {args:src tests} && ruff format --check {args:src tests}"
+typecheck = "mypy {args:src tests}"
+fmt = "ruff format {args:src tests} && ruff check --fix {args:src tests}"
+
+[tool.hatch.envs.lint]
+dependencies = [
+    "ruff>=0.4.0",
+]
+
+[tool.hatch.envs.lint.scripts]
+lint = "ruff check {args:src tests} && ruff format --check {args:src tests}"
+fmt = "ruff format {args:src tests} && ruff check --fix {args:src tests}"
+
+[tool.hatch.envs.typecheck]
+dependencies = [
+    "mypy>=1.8.0",
+    "pytest>=7.4.0",
+    "types-PyYAML>=6.0.0",
+]
+
+[tool.hatch.envs.typecheck.scripts]
+typecheck = "mypy {args:src tests}"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line length handled by formatter
+    "B008",  # function call in default argument (Typer)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["urdu_eval"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
