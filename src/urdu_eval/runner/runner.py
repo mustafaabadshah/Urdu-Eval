@@ -9,6 +9,7 @@ import platform
 import sys
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from urdu_eval import __version__
 from urdu_eval.analysis.failures import categorize_failure
@@ -247,21 +248,61 @@ class EvaluationRunner:
             elif r.error is not None:
                 failure_summary["error"] = failure_summary.get("error", 0) + 1
 
+        # Determine dataset scope and official evaluation status
+        is_dev = (
+            getattr(self.benchmark.metadata, "is_development_sample", False)
+            or getattr(self.benchmark.metadata, "dataset_scope", "official") == "development"
+        )
+        dataset_scope = "development" if is_dev else "official"
+        is_official = not is_dev
+        official_size = getattr(self.benchmark.metadata, "official_benchmark_size", None)
+
+        model_cfg = self.config.model
+        prompt_proto = self.config.prompt_protocol
+        ci_cfg = self.config.ci_config
+        contam_info = self.config.contamination
+
         run_metadata = RunMetadata(
             run_id=final_run_id,
             timestamp=timestamp,
             urdu_eval_version=__version__,
             benchmark=self.benchmark.metadata,
+            benchmark_id=self.benchmark.metadata.id,
+            benchmark_version=self.benchmark.metadata.version,
             dataset_hash=self.benchmark.metadata.provenance,
-            model_config=self.config.model,
+            dataset_sha256=self.benchmark.metadata.provenance,
+            dataset_size=total,
+            dataset_scope=dataset_scope,
+            is_official_evaluation=is_official,
+            official_benchmark_size=official_size,
+            model_config=model_cfg,
+            model=model_cfg.model,
+            provider=model_cfg.provider,
+            model_revision=getattr(model_cfg, "revision", "default") or "default",
+            temperature=getattr(model_cfg, "temperature", 0.0),
+            top_p=getattr(model_cfg, "top_p", None),
+            max_tokens=getattr(model_cfg, "max_tokens", None),
+            seed=getattr(model_cfg, "seed", None),
+            prompt_protocol=prompt_proto,
+            prompt_template_version=getattr(prompt_proto, "template_version", "1.0"),
+            prompt_language=getattr(prompt_proto, "language", "urdu"),
+            shot_count=getattr(prompt_proto, "few_shot", 0),
+            answer_extraction_version=getattr(prompt_proto, "answer_extraction_version", "mcq-v1"),
             normalization_profile=self.config.normalization_profile,
+            normalization_version="v1.0",
+            metrics=[m.name for m in self.metrics],
+            ci_config=ci_cfg,
+            ci_method=ci_cfg.method.value
+            if hasattr(ci_cfg.method, "value")
+            else str(ci_cfg.method),
+            ci_resamples=ci_cfg.resamples,
+            ci_seed=ci_cfg.seed,
+            contamination=contam_info,
+            contamination_status=contam_info.status.value
+            if hasattr(contam_info.status, "value")
+            else str(contam_info.status),
             python_version=sys.version.split()[0],
             platform=f"{platform.system()} {platform.release()}",
-            seed=getattr(self.config.model, "seed", None),
-            top_p=getattr(self.config.model, "top_p", None),
-            prompt_protocol=self.config.prompt_protocol,
-            contamination=self.config.contamination,
-            ci_config=self.config.ci_config,
         )
 
         run_result = RunResult(
@@ -284,13 +325,52 @@ class EvaluationRunner:
         return run_result
 
     def _save_results(self, output_dir: Path, run_result: RunResult) -> None:
-        """Persist scores.json, summary.json, and samples.jsonl."""
-        # 1. scores.json and manifest.json (full serializable object)
+        """Persist scores.json, manifest.json, summary.json, and samples.jsonl."""
+        # 1. scores.json (full serializable object with samples)
         result_json = run_result.model_dump_json(indent=2)
         with (output_dir / "scores.json").open("w", encoding="utf-8") as f:
             f.write(result_json)
+
+        # 2. manifest.json (canonical research reproduction manifest)
+        meta = run_result.metadata
+        manifest_payload: dict[str, Any] = {
+            "urdu_eval_version": meta.urdu_eval_version,
+            "run_id": meta.run_id,
+            "timestamp": meta.timestamp,
+            "benchmark_id": meta.benchmark_id,
+            "benchmark_version": meta.benchmark_version,
+            "dataset_sha256": meta.dataset_sha256,
+            "dataset_size": meta.dataset_size,
+            "dataset_scope": meta.dataset_scope,
+            "is_official_evaluation": meta.is_official_evaluation,
+            "official_benchmark_size": meta.official_benchmark_size,
+            "prompt_template_version": meta.prompt_template_version,
+            "prompt_language": meta.prompt_language,
+            "shot_count": meta.shot_count,
+            "answer_extraction_version": meta.answer_extraction_version,
+            "model": meta.model,
+            "provider": meta.provider,
+            "model_revision": meta.model_revision,
+            "temperature": meta.temperature,
+            "top_p": meta.top_p,
+            "max_tokens": meta.max_tokens,
+            "seed": meta.seed,
+            "normalization_profile": meta.normalization_profile,
+            "normalization_version": meta.normalization_version,
+            "metrics": meta.metrics,
+            "scores": run_result.metrics,
+            "raw_metrics": run_result.raw_metrics,
+            "confidence_intervals": run_result.confidence_intervals,
+            "ci_method": meta.ci_method,
+            "ci_resamples": meta.ci_resamples,
+            "ci_seed": meta.ci_seed,
+            "contamination_status": meta.contamination_status,
+            "python_version": meta.python_version,
+            "platform": meta.platform,
+            "metadata": meta.model_dump(),
+        }
         with (output_dir / "manifest.json").open("w", encoding="utf-8") as f:
-            f.write(result_json)
+            json.dump(manifest_payload, f, indent=2)
 
         # 2. summary.json (compact top-level overview)
         summary = {

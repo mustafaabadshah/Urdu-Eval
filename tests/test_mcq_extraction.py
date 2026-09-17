@@ -44,3 +44,30 @@ def test_extract_mcq_unextractable() -> None:
     """Verify empty or non-matching text returns None."""
     assert extract_mcq_choice("") is None
     assert extract_mcq_choice("مجھے معلوم نہیں ہے") is None
+
+
+def test_extract_mcq_ambiguous_refusal() -> None:
+    """Verify ambiguous, hedged, or multi-choice responses are strictly refused (return None)."""
+    # 1. Disjunctions and conjunctions in Urdu
+    assert extract_mcq_choice("A یا C") is None
+    assert extract_mcq_choice("A اور B") is None
+    assert extract_mcq_choice("درست جواب: A یا B") is None
+    assert extract_mcq_choice("جواب A یا شاید D ہے") is None
+
+    # 2. Disjunctions and conjunctions in English
+    assert extract_mcq_choice("A or C") is None
+    assert extract_mcq_choice("Both A and B are correct") is None
+    assert extract_mcq_choice("Either C or D") is None
+    assert extract_mcq_choice("A / B") is None
+
+    # 3. Hedging between choices
+    assert extract_mcq_choice("مجھے لگتا ہے A، لیکن شاید C") is None
+    assert extract_mcq_choice("I think maybe A, but perhaps B") is None
+
+    # 4. Multi-choice enumeration without single definitive answer
+    assert extract_mcq_choice("A) اسلام آباد B) لاہور") is None
+    assert extract_mcq_choice("Option A is interesting, while Option C is also plausible.") is None
+
+    # 5. Multiple conflicting option text mentions
+    options = ["اسلام آباد", "لاہور", "کراچی", "پشاور"]
+    assert extract_mcq_choice("یہ اسلام آباد بھی ہو سکتا ہے اور لاہور بھی", options=options) is None

@@ -26,6 +26,13 @@ URBLIMP_PHENOMENA = [
 _DEV_SAMPLE_PATH = Path(__file__).parent.parent / "dev_samples" / "urblimp.jsonl"
 
 
+CITATION = (
+    "Adeeba, F., Dillon, B., Sajjad, H., & Bhatt, R. (2026). "
+    "UrBLiMP: A Benchmark for Evaluating the Linguistic Competence of Large Language Models in Urdu. "
+    "Findings of the Association for Computational Linguistics: ACL 2026 (arXiv:2508.01006)."
+)
+
+
 class UrBLiMPAdapter(Benchmark):
     """Adapter for UrBLiMP: Urdu Benchmark of Linguistic Minimal Pairs.
 
@@ -33,14 +40,19 @@ class UrBLiMPAdapter(Benchmark):
     with reported 96.1% human inter-annotator agreement.
 
     Reference:
-    UrBLiMP: A Linguistic Benchmark for Assessing Urdu Language Models.
+        Adeeba, F., Dillon, B., Sajjad, H., & Bhatt, R. (2026).
+        UrBLiMP: A Benchmark for Evaluating the Linguistic Competence of Large Language Models in Urdu.
+        Findings of the Association for Computational Linguistics: ACL 2026 (arXiv:2508.01006).
+
     Task: Minimal Pair Discrimination (Accuracy of grammatical vs ungrammatical preference).
     """
+
+    OFFICIAL_BENCHMARK_SIZE: int = 5696
 
     def __init__(
         self,
         phenomenon: str | None = None,
-        hf_dataset_name: str = "urdu-nlp/urblimp",
+        hf_dataset_name: str | None = None,
         split: str = "test",
         use_dev_fallback: bool = True,
     ) -> None:
@@ -55,33 +67,48 @@ class UrBLiMPAdapter(Benchmark):
             name=f"UrBLiMP (Linguistic Minimal Pairs){phen_desc}",
             description=(
                 "Urdu Benchmark of Linguistic Minimal Pairs testing 10 syntactic and morphosyntactic "
-                "phenomena (5,696 minimal pairs, 96.1% human agreement)."
+                "phenomena (5,696 minimal pairs, 96.1% human agreement; Adeeba et al., ACL 2026)."
             ),
             languages=[Language.URDU],
             scripts=[Script.URDU],
             tasks=[TaskType.MINIMAL_PAIR],
             metrics=["exact_match", "accuracy"],
-            source=f"UrBLiMP Corpus ({self.hf_dataset_name})",
+            source="UrBLiMP (Adeeba et al., ACL 2026, arXiv:2508.01006)",
             license="CC-BY-4.0",
             version="1.0.0",
-            provenance="https://huggingface.co/datasets/urdu-nlp/urblimp",
-            is_development_sample=False,
+            provenance="Adeeba et al. (ACL 2026) / arXiv:2508.01006",
+            citation=CITATION,
+            is_development_sample=True,
+            dataset_scope="development",
+            official_benchmark_size=self.OFFICIAL_BENCHMARK_SIZE,
         )
 
     def load_samples(self, max_samples: int | None = None) -> Iterator[Sample]:
-        """Stream samples from HuggingFace dataset or bundled development set."""
+        """Stream samples from configured dataset or bundled development set."""
         hf_available = False
-        try:
-            from datasets import load_dataset as hf_load_dataset
+        if self.hf_dataset_name:
+            try:
+                from datasets import load_dataset as hf_load_dataset
 
-            ds = hf_load_dataset(self.hf_dataset_name, split=self.split, streaming=True)
-            hf_available = True
-        except Exception:
-            hf_available = False
+                ds = hf_load_dataset(self.hf_dataset_name, split=self.split, streaming=True)
+                hf_available = True
+                self.metadata.is_development_sample = False
+                self.metadata.dataset_scope = "official"
+            except Exception:
+                hf_available = False
 
         if not hf_available:
-            # Fall back gracefully to bundled development sample
+            # Fall back to bundled development sample with loud explicit warning
             if self.use_dev_fallback and _DEV_SAMPLE_PATH.exists():
+                import sys
+
+                sys.stderr.write(
+                    "\n⚠️  UrBLiMP NOTICE: Full dataset unavailable. Using bundled DEVELOPMENT samples (N=10).\n"
+                    "   This run is NOT an official UrBLiMP evaluation.\n"
+                    "   To evaluate all 5,696 pairs, provide the official dataset (Adeeba et al., ACL 2026) via: --dataset <path_to_urblimp.jsonl>\n\n"
+                )
+                self.metadata.is_development_sample = True
+                self.metadata.dataset_scope = "development"
                 count = 0
                 for s in load_dataset(_DEV_SAMPLE_PATH):
                     item_phen = s.metadata.get("phenomenon", "").lower().replace("-", "_")
@@ -92,9 +119,8 @@ class UrBLiMPAdapter(Benchmark):
                     if max_samples is not None and count >= max_samples:
                         break
                 return
-            raise ImportError(
-                "The 'datasets' package is required to load UrBLiMP from HuggingFace. "
-                "Install it with: pip install datasets"
+            raise FileNotFoundError(
+                "UrBLiMP dataset file not found. Provide the official dataset via --dataset <path>."
             )
 
         count = 0
@@ -134,5 +160,7 @@ class UrBLiMPAdapter(Benchmark):
                 break
 
     def count_samples(self) -> int:
-        """Total verified minimal pairs in published UrBLiMP dataset."""
-        return 5696
+        """Sample count for currently active dataset scope."""
+        if self.metadata.is_development_sample:
+            return 10
+        return self.OFFICIAL_BENCHMARK_SIZE

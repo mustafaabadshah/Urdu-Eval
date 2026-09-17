@@ -97,7 +97,10 @@ class UrduMMLUAdapter(Benchmark):
             license="CC-BY-SA-4.0",
             version="1.0.0",
             provenance="https://huggingface.co/datasets/UrduMMLU/UrduMMLU",
+            citation="UrduMMLU: Massive Multitask Language Understanding in Urdu (26,431 questions across 5 domains).",
             is_development_sample=False,
+            dataset_scope="official",
+            official_benchmark_size=26431,
         )
 
     def load_samples(self, max_samples: int | None = None) -> Iterator[Sample]:

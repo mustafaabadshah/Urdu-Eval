@@ -149,16 +149,20 @@ urdu-eval run --benchmark urdummlu-other --provider openai --model gpt-4o
 ```
 
 ### 2. UrBLiMP (Linguistic Minimal Pairs, 5,696 Pairs)
-UrBLiMP isolates fine-grained grammatical knowledge using minimal pairs across 10 phenomena (e.g. subject-verb agreement, ergative case marking `-ne`, word order, converb agreement, anaphora binding):
+UrBLiMP (*Adeeba, Dillon, Sajjad, & Bhatt, Findings of the Association for Computational Linguistics: ACL 2026 / arXiv:2508.01006*) isolates fine-grained grammatical knowledge using 5,696 minimal pairs across 10 phenomena (e.g. subject-verb agreement, ergative case marking `-ne`, word order, pro-drop, verb subcategorization, anaphora binding, coordination, filler-gap dependency, negation scope, tense/aspect concord):
 
 ```bash
-# Run full UrBLiMP minimal pair evaluation
-urdu-eval run --benchmark urblimp --provider ollama --model llama3.1
+# Run full UrBLiMP minimal pair evaluation with published dataset
+urdu-eval run --benchmark urblimp --dataset path/to/urblimp.jsonl --provider ollama --model llama3.1
 
-# Run specific linguistic phenomenon
+# Run phenomenon-specific subsets
 urdu-eval run --benchmark urblimp-subject-verb-agreement --provider ollama --model llama3.1
 urdu-eval run --benchmark urblimp-case-marking --provider ollama --model llama3.1
 ```
+
+> [!IMPORTANT]
+> **Dataset Scope Distinction**:
+> Offline development installs include 10 bundled minimal pairs for rapid integration and continuous testing. When running on bundled development samples, UrduEval emits a prominent notice and marks the run manifest with `"dataset_scope": "development"` and `"is_official_evaluation": false`. Official academic evaluation requires providing the full published 5,696-pair dataset (Adeeba et al., ACL 2026).
 
 ---
 
@@ -170,22 +174,23 @@ Reproducibility is the foundational principle of UrduEval: an evaluation score i
 Verify whether an existing evaluation run can be reproduced in your environment:
 
 ```bash
-urdu-eval reproduce results/run_20260917_urdu_qa/scores.json
+urdu-eval reproduce results/run_20260917_urblimp/manifest.json
 ```
 
 ```text
-       UrduEval Reproducibility Audit — Run: run_20260917_urdu_qa
-╭───────────────────────┬─────────────┬────────────────────┬───────────────────╮
-│ Protocol Element      │   Status    │ Recorded in        │ Observed in       │
-│                       │             │ Manifest           │ Environment       │
-├───────────────────────┼─────────────┼────────────────────┼───────────────────┤
-│ UrduEval Version      │   ✓ MATCH   │ 0.2.0              │ 0.2.0             │
-│ Benchmark Registry    │   ✓ FOUND   │ urdu-qa (v0.1.0)   │ urdu-qa (v0.1.0)  │
-│ Dataset SHA-256 Hash  │ ✓ VERIFIED  │ SHA-256:f15ceabd… │ SHA-256:f15ceabd… │
-│ Normalization Profile │ ✓ SUPPORTED │ conservative       │ conservative      │
-│ Prompt Protocol       │ ✓ SPECIFIED │ v1.0 (few-shot: 0) │ v1.0 (few-shot: 0)│
-│ Model Hyperparameters │   ✓ FIXED   │ llama3.1 (temp=0.0)│ llama3.1 (temp=0.0│
-╰───────────────────────┴─────────────┴────────────────────┴───────────────────╯
+       UrduEval Reproducibility Audit — Run: run_20260917_urblimp
+╭───────────────────────┬───────────────┬──────────────────┬───────────────────╮
+│ Protocol Element      │    Status     │ Recorded in      │ Observed in       │
+│                       │               │ Manifest         │ Environment       │
+├───────────────────────┼───────────────┼──────────────────┼───────────────────┤
+│ UrduEval Version      │    ✓ MATCH    │ 0.2.0            │ 0.2.0             │
+│ Benchmark Registry    │    ✓ FOUND    │ urblimp (v1.0.0) │ urblimp (v1.0.0)  │
+│ Dataset Scope         │ ! DEVELOPMENT │ development      │ development       │
+│ Dataset SHA-256 Hash  │  ✓ VERIFIED   │ Adeeba et al.    │ Adeeba et al.     │
+│ Normalization Profile │  ✓ SUPPORTED  │ conservative     │ conservative      │
+│ Prompt Protocol       │  ✓ SPECIFIED  │ v1.0 (few-shot:0)│ v1.0 (few-shot:0) │
+│ Model Hyperparameters │    ✓ FIXED    │ llama3.1 (temp=0)│ llama3.1 (temp=0) │
+╰───────────────────────┴───────────────┴──────────────────┴───────────────────╯
 ✓ REPRODUCIBILITY AUDIT: PASS — All experimental parameters match.
 ```
 

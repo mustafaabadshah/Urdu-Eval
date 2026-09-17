@@ -77,7 +77,10 @@ class BenchmarkMetadata(BaseModel):
     license: str
     version: str
     provenance: str = ""
+    citation: str = ""
     is_development_sample: bool = False
+    dataset_scope: str = "official"  # "official" or "development"
+    official_benchmark_size: int | None = None
 
 
 class MetricResult(BaseModel):
@@ -128,6 +131,7 @@ class PromptProtocol(BaseModel):
     few_shot: int = 0
     system_prompt: str | None = None
     answer_format: str = "choice_letter"
+    answer_extraction_version: str = "mcq-v1"
 
 
 class ContaminationInfo(BaseModel):
@@ -167,22 +171,56 @@ class RunConfig(BaseModel):
 class RunMetadata(BaseModel):
     """Reproducibility metadata for an evaluation run."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     run_id: str
     timestamp: str
     urdu_eval_version: str
     benchmark: BenchmarkMetadata
-    dataset_hash: str
+
+    # Explicit Benchmark & Dataset Provenance
+    benchmark_id: str = ""
+    benchmark_version: str = "1.0.0"
+    dataset_hash: str = ""
+    dataset_sha256: str = ""
+    dataset_size: int = 0
+    dataset_scope: str = "official"  # "official" or "development"
+    is_official_evaluation: bool = True
+    official_benchmark_size: int | None = None
+
+    # Model & Execution Hyperparameters
     model_settings: ModelConfig = Field(alias="model_config")
-    normalization_profile: str = "conservative"
-    python_version: str
-    platform: str
-    seed: int | None = None
+    model: str = ""
+    provider: str = ""
+    model_revision: str = "default"
+    temperature: float = 0.0
     top_p: float | None = None
+    max_tokens: int | None = None
+    seed: int | None = None
+
+    # Prompt Protocol
     prompt_protocol: PromptProtocol = Field(default_factory=PromptProtocol)
-    contamination: ContaminationInfo = Field(default_factory=ContaminationInfo)
+    prompt_template_version: str = "1.0"
+    prompt_language: str = "urdu"
+    shot_count: int = 0
+    answer_extraction_version: str = "mcq-v1"
+
+    # Normalization & Metrics
+    normalization_profile: str = "conservative"
+    normalization_version: str = "v1.0"
+    metrics: list[str] = Field(default_factory=list)
+
+    # Statistical Configuration
     ci_config: CIConfig = Field(default_factory=CIConfig)
+    ci_method: str = "auto"
+    ci_resamples: int = 1000
+    ci_seed: int = 42
+
+    # Contamination & Environment
+    contamination: ContaminationInfo = Field(default_factory=ContaminationInfo)
+    contamination_status: str = "unknown"
+    python_version: str = ""
+    platform: str = ""
 
 
 class RunResult(BaseModel):

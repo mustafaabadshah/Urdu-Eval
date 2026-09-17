@@ -135,6 +135,7 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(qa_meta, _DEV_SAMPLES_DIR / "urdu_qa.jsonl"))
 
@@ -151,6 +152,7 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(rs_meta, _DEV_SAMPLES_DIR / "urdu_reasoning.jsonl"))
 
@@ -167,6 +169,7 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(tr_meta, _DEV_SAMPLES_DIR / "urdu_translation.jsonl"))
 
@@ -183,6 +186,7 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(sm_meta, _DEV_SAMPLES_DIR / "urdu_summary.jsonl"))
 
@@ -199,6 +203,7 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(rm_meta, _DEV_SAMPLES_DIR / "urdu_roman.jsonl"))
 
@@ -215,5 +220,6 @@ def _ensure_builtin_benchmarks() -> None:
         license="Apache-2.0",
         version="0.1.0",
         is_development_sample=True,
+        dataset_scope="development",
     )
     register_benchmark(FileBenchmark(mmlu_meta, _DEV_SAMPLES_DIR / "urdu_mmlu.jsonl"))

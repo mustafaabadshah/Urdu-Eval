@@ -71,15 +71,26 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
     """Verify an evaluation manifest against current environment and dataset specifications."""
     data = load_manifest(manifest_path)
     metadata = data.get("metadata", {})
-    if not metadata and "model" in data and "benchmark_id" in data:
-        # Backward compatibility for direct RunConfig dump
-        metadata = {
-            "run_id": data.get("run_id", "unknown"),
-            "urdu_eval_version": "unknown",
-            "benchmark": {"id": data.get("benchmark_id", ""), "version": "unknown"},
-            "dataset_hash": "",
-            "model_config": data.get("model", {}),
-            "normalization_profile": data.get("normalization_profile", "conservative"),
+    if not isinstance(metadata, dict):
+        metadata = {}
+
+    # Overlay flat top-level manifest fields if present
+    for k, v in data.items():
+        if k not in (
+            "metadata",
+            "summary",
+            "scores",
+            "raw_metrics",
+            "confidence_intervals",
+            "samples",
+        ):
+            if k not in metadata:
+                metadata[k] = v
+
+    if not metadata.get("benchmark") and "benchmark_id" in metadata:
+        metadata["benchmark"] = {
+            "id": metadata.get("benchmark_id", ""),
+            "version": metadata.get("benchmark_version", "1.0.0"),
         }
 
     run_id = str(data.get("run_id", metadata.get("run_id", "unknown")))
@@ -107,8 +118,8 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
 
     # 2. Check Benchmark & Version
     bench_info = metadata.get("benchmark", {})
-    bench_id = str(bench_info.get("id", "")).lower()
-    bench_version = str(bench_info.get("version", "1.0.0"))
+    bench_id = str(metadata.get("benchmark_id") or bench_info.get("id", "")).lower()
+    bench_version = str(metadata.get("benchmark_version") or bench_info.get("version", "1.0.0"))
 
     bench_obj = None
     try:
@@ -129,8 +140,28 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
         )
     )
 
-    # 3. Check Dataset Hash & Sample Count
-    recorded_hash = str(metadata.get("dataset_hash", ""))
+    # 3. Check Dataset Scope (Development vs Official)
+    recorded_scope = metadata.get("dataset_scope") or (
+        "development" if bench_info.get("is_development_sample") else "official"
+    )
+    is_dev = recorded_scope == "development"
+    checks.append(
+        CheckItem(
+            name="Dataset Scope",
+            passed=True,
+            status="DEVELOPMENT" if is_dev else "OFFICIAL",
+            expected=recorded_scope,
+            observed=recorded_scope,
+            warning_only=is_dev,
+        )
+    )
+    if is_dev:
+        warnings.append(
+            "Run evaluated DEVELOPMENT samples; not comparable to official benchmark leaderboards."
+        )
+
+    # 4. Check Dataset Hash & Sample Count
+    recorded_hash = str(metadata.get("dataset_sha256") or metadata.get("dataset_hash", ""))
     if bench_obj is not None:
         current_hash = bench_obj.metadata.provenance
         if recorded_hash and current_hash:
@@ -205,7 +236,13 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
     )
 
     all_passed = all(c.passed for c in checks if not c.warning_only)
-    recorded_metrics = data.get("metrics", {})
+
+    raw_metrics = data.get("scores") or data.get("metrics") or {}
+    recorded_metrics: dict[str, float] = {}
+    if isinstance(raw_metrics, dict):
+        for k, v in raw_metrics.items():
+            if isinstance(v, (int, float)):
+                recorded_metrics[str(k)] = float(v)
 
     return ReproduceReport(
         run_id=run_id,
@@ -239,9 +276,10 @@ def render_reproduce_report(report: ReproduceReport, console: Console) -> None:
             "FIXED",
             "SPECIFIED",
             "RECORDED",
+            "OFFICIAL",
         }:
             status_str = f"[green]✓ {c.status}[/green]"
-        elif c.status == "NOTICE":
+        elif c.status in {"NOTICE", "DEVELOPMENT"}:
             status_str = f"[yellow]! {c.status}[/yellow]"
         else:
             status_str = f"[red]✗ {c.status}[/red]"

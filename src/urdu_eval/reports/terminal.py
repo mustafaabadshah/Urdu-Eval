@@ -58,10 +58,31 @@ def render_run_summary(run_result: RunResult) -> None:
     meta_table.add_row("Model", f"[bold green]{meta.model_settings.model}[/bold green]")
     meta_table.add_row("Provider", meta.model_settings.provider)
     meta_table.add_row("Benchmark", f"{meta.benchmark.name} ([dim]{meta.benchmark.id}[/dim])")
-    meta_table.add_row("Total Samples", str(run_result.total_samples))
+
+    is_dev = meta.dataset_scope == "development" or meta.benchmark.is_development_sample
+    scope_str = (
+        "[bold yellow]DEVELOPMENT SAMPLES (Not Official Score)[/bold yellow]"
+        if is_dev
+        else "[bold green]OFFICIAL BENCHMARK EVALUATION[/bold green]"
+    )
+    meta_table.add_row("Dataset Scope", scope_str)
+    if meta.official_benchmark_size and meta.official_benchmark_size > run_result.total_samples:
+        meta_table.add_row(
+            "Benchmark Coverage",
+            f"{run_result.total_samples} evaluated / {meta.official_benchmark_size:,} published samples",
+        )
+    else:
+        meta_table.add_row("Total Samples", str(run_result.total_samples))
+
     meta_table.add_row("Mean Latency", f"{run_result.mean_latency_ms:.1f} ms")
     meta_table.add_row("Run ID", f"[yellow]{run_result.run_id}[/yellow]")
     console.print(meta_table)
+
+    if is_dev:
+        console.print(
+            "  [dim yellow]⚠️  Notice: Evaluated on development samples. This run does not represent an academic "
+            "or official leaderboard score.[/dim yellow]"
+        )
 
     # Metrics Table
     console.print()

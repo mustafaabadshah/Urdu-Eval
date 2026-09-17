@@ -10,13 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Statistical Bootstrap Confidence Intervals**: Non-parametric percentile bootstrap confidence intervals (1,000 resamples, deterministically seeded) for all continuous and bounded metrics (`f1`, `bleu`, `chrf++`, `rouge-l`, `judge`), complementing Wilson score intervals for binomial metrics. Configurable via `--ci-method auto|bootstrap|wilson|t`.
 - **Reproducibility Audit Engine (`urdu-eval reproduce <manifest>`)**: Complete CLI verification checking dataset cryptographic hash, benchmark version, prompt protocol, model hyperparameters, normalization profile, and UrduEval version compatibility.
+- **Canonical 27-Key Research Reproduction Manifest**: Generates standalone `manifest.json` recording `urdu_eval_version`, `dataset_sha256`, `dataset_scope`, `is_official_evaluation`, `prompt_template_version`, `model_revision`, `temperature`, `seed`, `ci_method`, and full execution determinants.
 - **Benchmark Integrity Verification (`urdu-eval benchmark verify <id>`)**: Automated dataset audit checking sample count, schema validity, field completeness, duplicate prompts, and cryptographic SHA-256 provenance.
-- **UrBLiMP Linguistic Minimal Pairs Adapter**: Native adapter for the 5,696-pair UrBLiMP benchmark across 10 morphosyntactic phenomena (subject-verb agreement, case marking, word order, converb agreement, anaphora binding, etc., with 96.1% human agreement) plus bundled offline development samples.
+- **UrBLiMP Linguistic Minimal Pairs Adapter**: Native adapter for the 5,696-pair UrBLiMP benchmark across 10 morphosyntactic phenomena (*Adeeba, Dillon, Sajjad, & Bhatt, Findings of ACL 2026 / arXiv:2508.01006*). Enforces strict distinction between bundled development samples ($N=10$) and full official evaluations ($N=5,696$) with prominent CLI alert notices.
 - **UrduMMLU Complete 5-Domain Exposure**: Fully registered and exposed `urdummlu-other` alongside `stem`, `humanities`, `social_sciences`, and `profession`.
-- **Deterministic MCQ Extraction Protocol**: Robust choice-letter extraction (`A`, `B`, `C`, `D`) handling common conversational and natural Urdu model outputs (e.g. `جواب C ہے`, `درست جواب: (A)`, `صحیح آپشن: B`).
+- **Deterministic MCQ Extraction with Ambiguity Refusal**: Robust choice-letter extraction (`A`, `B`, `C`, `D`) handling conversational Urdu outputs (`جواب C ہے`, `درست انتخاب: (A)`), while strictly refusing ambiguous, hedged, or multi-choice outputs (`A یا C`, `A اور B`, `مجھے لگتا ہے A، لیکن شاید C`) to eliminate false positives.
 - **Canonical Request Caching**: SHA-256 caching encompassing all generation determinants (`temperature`, `top_p`, `max_tokens`, `seed`, `system_prompt`, `benchmark_id`, `prompt_template_version`) to eliminate silent cache contamination.
 - **Roman Urdu Strict vs. Phonetic Profiles**: Formal separation between `roman_urdu_strict` (zero vowel alteration) and `roman_urdu_phonetic` (safe 3+ vowel elongation collapse and diagnostic cluster matching).
-- **Attribution & Scholarly Metadata**: Formally attributed Syed Mustafa Badshah as primary author in `CITATION.cff`, `pyproject.toml`, and README with academic speaker demographics citation.
+- **Attribution & Scholarly Metadata**: Formally attributed Syed Mustafa Badshah as primary author in `CITATION.cff`, `pyproject.toml`, and README; removed placeholder ORCID; updated speaker demographics citation (Ethnologue / Eberhard et al., 2024).
 
 ## [0.1.2] - 2026-09-17
 
