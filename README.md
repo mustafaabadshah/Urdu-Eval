@@ -393,7 +393,7 @@ If you use UrduEval in your academic work, research, or product development, ple
   author = {UrduEval Contributors},
   title = {UrduEval: Open Evaluation Layer for Urdu and Roman Urdu AI},
   year = {2026},
-  url = {https://github.com/urdu-eval/urdu-eval}
+  url = {https://github.com/mustafaabadshah/Urdu-Eval}
 }
 ```
 

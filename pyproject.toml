@@ -52,11 +52,11 @@ urdu-eval = "urdu_eval.cli:app"
 urdueval = "urdu_eval.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/urdu-eval/urdu-eval"
-Documentation = "https://github.com/urdu-eval/urdu-eval#readme"
-Repository = "https://github.com/urdu-eval/urdu-eval.git"
-Issues = "https://github.com/urdu-eval/urdu-eval/issues"
-Changelog = "https://github.com/urdu-eval/urdu-eval/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/mustafaabadshah/Urdu-Eval"
+Documentation = "https://github.com/mustafaabadshah/Urdu-Eval#readme"
+Repository = "https://github.com/mustafaabadshah/Urdu-Eval.git"
+Issues = "https://github.com/mustafaabadshah/Urdu-Eval/issues"
+Changelog = "https://github.com/mustafaabadshah/Urdu-Eval/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
 path = "src/urdu_eval/__init__.py"

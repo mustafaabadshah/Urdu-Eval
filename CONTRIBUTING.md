@@ -8,8 +8,8 @@ Thank you for your interest in contributing to UrduEval! We welcome contribution
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/urdu-eval/urdu-eval.git
-   cd urdu-eval
+   git clone https://github.com/mustafaabadshah/Urdu-Eval.git
+   cd Urdu-Eval
    ```
 
 2. **Environment & Hatch**:

@@ -29,7 +29,7 @@ class OpenRouterProvider(HTTPProvider):
                 "or pass api_key to OpenRouterProvider."
             )
         headers = {
-            "HTTP-Referer": "https://github.com/urdu-eval/urdu-eval",
+            "HTTP-Referer": "https://github.com/mustafaabadshah/Urdu-Eval",
             "X-Title": "UrduEval Evaluation Toolkit",
         }
         super().__init__(

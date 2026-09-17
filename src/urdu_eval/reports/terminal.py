@@ -37,7 +37,7 @@ def render_banner() -> None:
         Panel(
             content,
             title="[bold green]اردو اِیوَل[/bold green]",
-            subtitle="[dim]https://github.com/urdu-eval/urdu-eval[/dim]",
+            subtitle="[dim]https://github.com/mustafaabadshah/Urdu-Eval[/dim]",
             box=ROUNDED,
             border_style="cyan",
             expand=False,
