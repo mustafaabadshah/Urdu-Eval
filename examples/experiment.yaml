@@ -1,0 +1,35 @@
+# UrduEval Experiment Configuration
+# Run with: urdu-eval experiment examples/experiment.yaml
+
+experiment:
+  name: pakistan-urdu-comparison
+  description: Comparative evaluation across Urdu script and Roman Urdu
+
+models:
+  - provider: mock
+    model: mock-urdu-baseline
+    temperature: 0.0
+
+  # Example API models (uncomment and supply environment variables to run):
+  # - provider: openai
+  #   model: gpt-4o-mini
+  #   temperature: 0.0
+
+  # - provider: ollama
+  #   model: llama3.1
+  #   temperature: 0.0
+
+benchmarks:
+  - urdu-qa
+  - urdu-reasoning
+  - urdu-roman
+
+metrics:
+  - exact_match
+  - f1
+
+execution:
+  workers: 1
+  cache: true
+  max_samples: 5
+  output_dir: results/

@@ -42,12 +42,21 @@ from urdu_eval.reports import (
 )
 from urdu_eval.runner import EvaluationRunner
 
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 app = typer.Typer(
     name="urdu-eval",
     help="UrduEval: Open evaluation infrastructure for Urdu & Roman Urdu AI.",
     add_completion=False,
 )
-console = Console()
+console = Console(legacy_windows=False)
 
 
 @app.command(name="version")
@@ -344,3 +353,60 @@ def leaderboard_command(
     else:
         console.print(f"[bold red]Unsupported format:[/bold red] {format_type}")
         raise typer.Exit(code=1)
+
+
+@app.command(name="experiment")
+def experiment_command(
+    config_file: Path = typer.Argument(..., help="Path to experiment YAML configuration"),
+) -> None:
+    """Run an automated multi-model, multi-benchmark experiment pipeline from YAML."""
+    import yaml
+
+    render_banner()
+    if not config_file.exists():
+        console.print(f"[bold red]Configuration file not found:[/bold red] {config_file}")
+        raise typer.Exit(code=1)
+
+    with config_file.open("r", encoding="utf-8") as f:
+        exp_data = yaml.safe_load(f)
+
+    exp_info = exp_data.get("experiment", {})
+    exp_name = exp_info.get("name", config_file.stem)
+    console.print(f"[bold cyan]Running Experiment Pipeline:[/bold cyan] {exp_name}\n")
+
+    models = exp_data.get("models", [])
+    benchmark_ids = exp_data.get("benchmarks", [])
+    metrics = exp_data.get("metrics", ["exact_match", "f1"])
+    exec_cfg = exp_data.get("execution", {})
+
+    workers = exec_cfg.get("workers", 1)
+    use_cache = exec_cfg.get("cache", True)
+    max_samples = exec_cfg.get("max_samples")
+    output_dir = exec_cfg.get("output_dir", "results")
+
+    run_results: list[RunResult] = []
+
+    for m in models:
+        provider_name = m.get("provider", "mock")
+        model_name = m.get("model", "mock-model")
+        temp = m.get("temperature", 0.0)
+
+        for b_id in benchmark_ids:
+            console.print(f"[bold]>>> Evaluating {model_name} on {b_id}...[/bold]")
+            bm = get_benchmark(b_id)
+            model_cfg = ModelConfig(provider=provider_name, model=model_name, temperature=temp)
+            run_cfg = RunConfig(
+                model=model_cfg,
+                benchmark_id=b_id,
+                metrics=metrics,
+                use_cache=use_cache,
+                workers=workers,
+                max_samples=max_samples,
+                output_dir=output_dir,
+            )
+            runner = EvaluationRunner(config=run_cfg, benchmark=bm)
+            res = runner.run()
+            run_results.append(res)
+
+    console.print("\n[bold green]Experiment Complete![/bold green]")
+    render_comparison_table(run_results)

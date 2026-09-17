@@ -137,3 +137,11 @@ def test_cli_leaderboard_and_compare() -> None:
         comp_res = runner.invoke(app, ["compare", str(score_path)])
         assert comp_res.exit_code == 0
         assert "mock-urdu-model" in comp_res.stdout
+
+
+def test_cli_experiment() -> None:
+    """Test 'urdu-eval experiment' running from YAML configuration."""
+    result = runner.invoke(app, ["experiment", "examples/experiment.yaml"])
+    assert result.exit_code == 0
+    assert "Experiment Pipeline" in result.stdout
+    assert "Experiment Complete" in result.stdout

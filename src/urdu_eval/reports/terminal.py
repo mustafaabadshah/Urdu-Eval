@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 from rich.box import ROUNDED
@@ -12,7 +13,16 @@ from rich.table import Table
 from urdu_eval import __version__
 from urdu_eval.models import BenchmarkMetadata, RunResult, SampleResult
 
-console = Console()
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+console = Console(legacy_windows=False)
 
 
 def render_banner() -> None:
