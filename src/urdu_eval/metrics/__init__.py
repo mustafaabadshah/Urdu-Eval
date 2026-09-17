@@ -11,8 +11,15 @@ from urdu_eval.metrics.chrf import ChrFMetric
 from urdu_eval.metrics.exact_match import ExactMatchMetric
 from urdu_eval.metrics.f1 import F1Metric, SquadF1Metric
 from urdu_eval.metrics.judge import LLMJudgeMetric, parse_judge_output
+from urdu_eval.metrics.mcq import extract_mcq_choice
 from urdu_eval.metrics.rouge import ROUGE1Metric, ROUGE2Metric, ROUGELMetric
 from urdu_eval.metrics.semantic import SemanticSimilarityMetric
+from urdu_eval.metrics.stats import (
+    bootstrap_confidence_interval,
+    compute_metric_ci,
+    continuous_confidence_interval,
+    wilson_score_interval,
+)
 
 __all__ = [
     "Metric",
@@ -30,4 +37,9 @@ __all__ = [
     "SemanticSimilarityMetric",
     "LLMJudgeMetric",
     "parse_judge_output",
+    "extract_mcq_choice",
+    "wilson_score_interval",
+    "continuous_confidence_interval",
+    "bootstrap_confidence_interval",
+    "compute_metric_ci",
 ]

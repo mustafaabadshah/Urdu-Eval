@@ -58,10 +58,34 @@ def get_benchmark(benchmark_id: str) -> Benchmark:
         domain = bid.split("-", 1)[1]
         return UrduMMLUAdapter(domain=domain)
 
+    if bid in {"urblimp", "urdu-blimp"}:
+        from urdu_eval.benchmarks.adapters.urblimp import UrBLiMPAdapter
+
+        return UrBLiMPAdapter()
+
+    if bid.startswith("urblimp-"):
+        from urdu_eval.benchmarks.adapters.urblimp import UrBLiMPAdapter
+
+        phenomenon = bid.split("-", 1)[1]
+        return UrBLiMPAdapter(phenomenon=phenomenon)
+
+    if bid in {"urdu-bench", "urdubench"}:
+        from urdu_eval.benchmarks.adapters.urdu_bench import UrduBenchAdapter
+
+        return UrduBenchAdapter()
+
     if bid not in _BENCHMARK_REGISTRY:
         available = ", ".join(
             sorted(_BENCHMARK_REGISTRY.keys())
-            + ["urdummlu", "urdummlu-stem", "urdummlu-humanities"]
+            + [
+                "urdummlu",
+                "urdummlu-stem",
+                "urdummlu-humanities",
+                "urdummlu-social_sciences",
+                "urdummlu-profession",
+                "urdummlu-other",
+                "urblimp",
+            ]
         )
         raise ValueError(
             f"Benchmark '{benchmark_id}' was not found. Available benchmarks:\n  {available}"
@@ -70,9 +94,27 @@ def get_benchmark(benchmark_id: str) -> Benchmark:
 
 
 def list_benchmarks() -> list[BenchmarkMetadata]:
-    """List metadata for all registered benchmarks."""
+    """List metadata for all registered benchmarks and available adapters."""
     _ensure_builtin_benchmarks()
-    return [b.metadata for b in _BENCHMARK_REGISTRY.values()]
+    metas = [b.metadata for b in _BENCHMARK_REGISTRY.values()]
+
+    # Include first-class external benchmark adapters
+    from urdu_eval.benchmarks.adapters.urblimp import UrBLiMPAdapter
+    from urdu_eval.benchmarks.adapters.urdu_mmlu import UrduMMLUAdapter
+
+    external_adapters = [
+        UrduMMLUAdapter(),
+        UrduMMLUAdapter(domain="stem"),
+        UrduMMLUAdapter(domain="humanities"),
+        UrduMMLUAdapter(domain="social_sciences"),
+        UrduMMLUAdapter(domain="profession"),
+        UrduMMLUAdapter(domain="other"),
+        UrBLiMPAdapter(),
+    ]
+    for adapter in external_adapters:
+        metas.append(adapter.metadata)
+
+    return metas
 
 
 def _ensure_builtin_benchmarks() -> None:

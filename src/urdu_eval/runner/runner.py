@@ -13,6 +13,7 @@ from pathlib import Path
 from urdu_eval import __version__
 from urdu_eval.analysis.failures import categorize_failure
 from urdu_eval.benchmarks.base import Benchmark
+from urdu_eval.enums import TaskType
 from urdu_eval.metrics.base import Metric, get_metric
 from urdu_eval.models import (
     ModelResponse,
@@ -70,7 +71,12 @@ class EvaluationRunner:
                 prompt=sample.prompt,
                 temperature=self.config.model.temperature,
                 max_tokens=self.config.model.max_tokens,
+                top_p=self.config.model.top_p,
+                seed=self.config.model.seed,
                 system_prompt=self.config.model.system_prompt,
+                benchmark_id=self.benchmark.metadata.id,
+                benchmark_version=self.benchmark.metadata.version,
+                prompt_template_version=self.config.prompt_protocol.template_version,
                 extra_params=self.config.model.extra_params,
             )
             cached_resp = self.cache.get(cache_key)
@@ -108,10 +114,21 @@ class EvaluationRunner:
         # Compute metric scores
         metric_scores: dict[str, float] = {}
         if error is None:
+            from urdu_eval.metrics.mcq import extract_mcq_choice
+
+            eval_pred = prediction
+            is_mcq = sample.task in {TaskType.MMLU, TaskType.MCQA, TaskType.MINIMAL_PAIR} or bool(
+                sample.options
+            )
+            if is_mcq and isinstance(sample.reference, str) and len(sample.reference.strip()) <= 2:
+                extracted = extract_mcq_choice(prediction, options=sample.options)
+                if extracted is not None:
+                    eval_pred = extracted
+
             for m in self.metrics:
                 try:
                     score = m.compute(
-                        prediction=prediction,
+                        prediction=eval_pred,
                         reference=sample.reference,
                         prompt=sample.prompt,
                     )
@@ -202,7 +219,14 @@ class EvaluationRunner:
             ]
             mean_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0.0
             aggregated_metrics[m.name] = mean_score
-            confidence_intervals[m.name] = compute_metric_ci(m.name, valid_scores)
+            confidence_intervals[m.name] = compute_metric_ci(
+                m.name,
+                valid_scores,
+                confidence=self.config.ci_config.confidence,
+                method=self.config.ci_config.method,
+                resamples=self.config.ci_config.resamples,
+                seed=self.config.ci_config.seed,
+            )
 
         # Compute raw unnormalized exact match for transparency
         raw_em_scores = [
@@ -235,6 +259,9 @@ class EvaluationRunner:
             platform=f"{platform.system()} {platform.release()}",
             seed=getattr(self.config.model, "seed", None),
             top_p=getattr(self.config.model, "top_p", None),
+            prompt_protocol=self.config.prompt_protocol,
+            contamination=self.config.contamination,
+            ci_config=self.config.ci_config,
         )
 
         run_result = RunResult(
@@ -243,6 +270,7 @@ class EvaluationRunner:
             metrics=aggregated_metrics,
             raw_metrics=raw_metrics,
             confidence_intervals=confidence_intervals,
+            ci_config=self.config.ci_config,
             samples=ordered_sample_results,
             failure_summary=failure_summary,
             total_samples=total,
@@ -257,9 +285,12 @@ class EvaluationRunner:
 
     def _save_results(self, output_dir: Path, run_result: RunResult) -> None:
         """Persist scores.json, summary.json, and samples.jsonl."""
-        # 1. scores.json (full serializable object)
+        # 1. scores.json and manifest.json (full serializable object)
+        result_json = run_result.model_dump_json(indent=2)
         with (output_dir / "scores.json").open("w", encoding="utf-8") as f:
-            f.write(run_result.model_dump_json(indent=2))
+            f.write(result_json)
+        with (output_dir / "manifest.json").open("w", encoding="utf-8") as f:
+            f.write(result_json)
 
         # 2. summary.json (compact top-level overview)
         summary = {

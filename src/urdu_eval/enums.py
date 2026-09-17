@@ -24,11 +24,14 @@ class TaskType(str, Enum):
     """Evaluation task types."""
 
     QA = "qa"
+    MCQA = "mcqa"
     REASONING = "reasoning"
     TRANSLATION = "translation"
     SUMMARIZATION = "summarization"
     INSTRUCTION_FOLLOWING = "instruction_following"
     MMLU = "mmlu"
+    MINIMAL_PAIR = "minimal_pair"
+    GRAMMAR = "grammar"
 
 
 class TranslationDirection(str, Enum):
@@ -62,3 +65,23 @@ class NormalizationProfile(str, Enum):
     CONSERVATIVE = "conservative"
     STANDARD = "standard"
     ROMAN_URDU = "roman_urdu"
+    ROMAN_URDU_STRICT = "roman_urdu_strict"
+    ROMAN_URDU_PHONETIC = "roman_urdu_phonetic"
+
+
+class CIMethod(str, Enum):
+    """Confidence interval estimation methods."""
+
+    AUTO = "auto"
+    BOOTSTRAP = "bootstrap"
+    WILSON = "wilson"
+    STUDENT_T = "t"
+
+
+class ContaminationStatus(str, Enum):
+    """Training-data contamination status for public benchmarks."""
+
+    UNKNOWN = "unknown"
+    NOT_TESTED = "not_tested"
+    SCREENED = "screened"
+    VERIFIED_CLEAN = "verified_clean"

@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 license = "Apache-2.0"
 keywords = ["nlp", "urdu", "roman-urdu", "llm-evaluation", "benchmark", "ai", "pakistan"]
 authors = [
+    { name = "Syed Mustafa Badshah", email = "mustafa@urdueval.org" },
     { name = "UrduEval Contributors", email = "contributors@urdueval.org" },
 ]
 classifiers = [

@@ -22,8 +22,8 @@ from urdu_eval.models import (
     SampleResult,
 )
 
-__version__ = "0.1.2"
-__author__ = "UrduEval Contributors"
+__version__ = "0.2.0"
+__author__ = "Syed Mustafa Badshah, UrduEval Contributors"
 __license__ = "Apache-2.0"
 
 __all__ = [

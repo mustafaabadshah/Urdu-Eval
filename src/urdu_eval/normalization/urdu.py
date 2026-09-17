@@ -161,10 +161,15 @@ def normalize_with_profile(text: str, profile: str = "conservative") -> str:
             conservative_only=False,
         )
 
-    if prof == "roman_urdu":
-        from urdu_eval.normalization.roman_urdu import normalize_roman_urdu
+    if prof in {"roman_urdu", "roman_urdu_phonetic"}:
+        from urdu_eval.normalization.roman_urdu import normalize_roman_urdu_phonetic
 
-        return normalize_roman_urdu(text)
+        return normalize_roman_urdu_phonetic(text)
+
+    if prof == "roman_urdu_strict":
+        from urdu_eval.normalization.roman_urdu import normalize_roman_urdu_strict
+
+        return normalize_roman_urdu_strict(text)
 
     # Fallback to conservative
     return normalize_urdu(

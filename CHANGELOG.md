@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-09-17
+
+### Added
+- **Statistical Bootstrap Confidence Intervals**: Non-parametric percentile bootstrap confidence intervals (1,000 resamples, deterministically seeded) for all continuous and bounded metrics (`f1`, `bleu`, `chrf++`, `rouge-l`, `judge`), complementing Wilson score intervals for binomial metrics. Configurable via `--ci-method auto|bootstrap|wilson|t`.
+- **Reproducibility Audit Engine (`urdu-eval reproduce <manifest>`)**: Complete CLI verification checking dataset cryptographic hash, benchmark version, prompt protocol, model hyperparameters, normalization profile, and UrduEval version compatibility.
+- **Benchmark Integrity Verification (`urdu-eval benchmark verify <id>`)**: Automated dataset audit checking sample count, schema validity, field completeness, duplicate prompts, and cryptographic SHA-256 provenance.
+- **UrBLiMP Linguistic Minimal Pairs Adapter**: Native adapter for the 5,696-pair UrBLiMP benchmark across 10 morphosyntactic phenomena (subject-verb agreement, case marking, word order, converb agreement, anaphora binding, etc., with 96.1% human agreement) plus bundled offline development samples.
+- **UrduMMLU Complete 5-Domain Exposure**: Fully registered and exposed `urdummlu-other` alongside `stem`, `humanities`, `social_sciences`, and `profession`.
+- **Deterministic MCQ Extraction Protocol**: Robust choice-letter extraction (`A`, `B`, `C`, `D`) handling common conversational and natural Urdu model outputs (e.g. `جواب C ہے`, `درست جواب: (A)`, `صحیح آپشن: B`).
+- **Canonical Request Caching**: SHA-256 caching encompassing all generation determinants (`temperature`, `top_p`, `max_tokens`, `seed`, `system_prompt`, `benchmark_id`, `prompt_template_version`) to eliminate silent cache contamination.
+- **Roman Urdu Strict vs. Phonetic Profiles**: Formal separation between `roman_urdu_strict` (zero vowel alteration) and `roman_urdu_phonetic` (safe 3+ vowel elongation collapse and diagnostic cluster matching).
+- **Attribution & Scholarly Metadata**: Formally attributed Syed Mustafa Badshah as primary author in `CITATION.cff`, `pyproject.toml`, and README with academic speaker demographics citation.
+
 ## [0.1.2] - 2026-09-17
 
 ### Fixed

@@ -7,6 +7,8 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from urdu_eval.enums import (
+    CIMethod,
+    ContaminationStatus,
     FailureCategory,
     Language,
     Script,
@@ -42,6 +44,7 @@ class ModelConfig(BaseModel):
     max_tokens: int = 1024
     top_p: float = 1.0
     system_prompt: str | None = None
+    seed: int | None = 42
     extra_params: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -115,6 +118,35 @@ class JudgeResult(BaseModel):
     raw_response: str = ""
 
 
+class PromptProtocol(BaseModel):
+    """Prompt construction protocol for reproducible evaluation across runs."""
+
+    model_config = ConfigDict(extra="allow")
+
+    language: str = "urdu"
+    template_version: str = "1.0"
+    few_shot: int = 0
+    system_prompt: str | None = None
+    answer_format: str = "choice_letter"
+
+
+class ContaminationInfo(BaseModel):
+    """Benchmark training-data contamination tracking."""
+
+    status: ContaminationStatus = ContaminationStatus.UNKNOWN
+    method: str | None = None
+    details: str = ""
+
+
+class CIConfig(BaseModel):
+    """Statistical confidence interval configuration."""
+
+    method: CIMethod = CIMethod.AUTO
+    confidence: float = 0.95
+    resamples: int = 1000
+    seed: int = 42
+
+
 class RunConfig(BaseModel):
     """Configuration for an evaluation run."""
 
@@ -127,6 +159,9 @@ class RunConfig(BaseModel):
     workers: int = 1
     max_samples: int | None = None
     output_dir: str = "results"
+    ci_config: CIConfig = Field(default_factory=CIConfig)
+    prompt_protocol: PromptProtocol = Field(default_factory=PromptProtocol)
+    contamination: ContaminationInfo = Field(default_factory=ContaminationInfo)
 
 
 class RunMetadata(BaseModel):
@@ -145,6 +180,9 @@ class RunMetadata(BaseModel):
     platform: str
     seed: int | None = None
     top_p: float | None = None
+    prompt_protocol: PromptProtocol = Field(default_factory=PromptProtocol)
+    contamination: ContaminationInfo = Field(default_factory=ContaminationInfo)
+    ci_config: CIConfig = Field(default_factory=CIConfig)
 
 
 class RunResult(BaseModel):
@@ -155,6 +193,7 @@ class RunResult(BaseModel):
     metrics: dict[str, float]
     raw_metrics: dict[str, float] = Field(default_factory=dict)
     confidence_intervals: dict[str, tuple[float, float]] = Field(default_factory=dict)
+    ci_config: CIConfig = Field(default_factory=CIConfig)
     samples: list[SampleResult]
     failure_summary: dict[str, int] = Field(default_factory=dict)
     total_samples: int = 0

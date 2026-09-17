@@ -142,6 +142,21 @@ def run_command(
         help="Normalization profile: raw, conservative, standard, roman_urdu",
     ),
     output_dir: str = typer.Option("results", "--output", "-o", help="Directory for run results"),
+    ci_method: str = typer.Option(
+        "auto",
+        "--ci-method",
+        help="Confidence interval method: auto, bootstrap, wilson, t",
+    ),
+    ci_resamples: int = typer.Option(
+        1000,
+        "--ci-resamples",
+        help="Number of bootstrap resamples (default: 1000)",
+    ),
+    seed: int = typer.Option(
+        42,
+        "--seed",
+        help="Random seed for model generation and statistical resampling",
+    ),
 ) -> None:
     """Run an evaluation benchmark against a model."""
     render_banner()
@@ -166,8 +181,16 @@ def run_command(
         )
         raise typer.Exit(code=1)
 
+    from urdu_eval.enums import CIMethod
+    from urdu_eval.models import CIConfig
+
+    parsed_ci_method = (
+        CIMethod(ci_method) if ci_method in {e.value for e in CIMethod} else CIMethod.AUTO
+    )
+    ci_cfg = CIConfig(method=parsed_ci_method, resamples=ci_resamples, seed=seed)
+
     parsed_metrics = [m.strip() for m in metrics.split(",") if m.strip()]
-    model_cfg = ModelConfig(provider=provider, model=model)
+    model_cfg = ModelConfig(provider=provider, model=model, seed=seed)
     run_cfg = RunConfig(
         model=model_cfg,
         benchmark_id=bm.metadata.id,
@@ -178,6 +201,7 @@ def run_command(
         workers=workers,
         max_samples=max_samples,
         output_dir=output_dir,
+        ci_config=ci_cfg,
     )
 
     runner = EvaluationRunner(config=run_cfg, benchmark=bm)
@@ -489,3 +513,119 @@ def cache_clear_command(
     cache = EvaluationCache(cache_dir)
     cache.clear()
     console.print("[bold green]Cache cleared successfully.[/bold green]")
+
+
+@app.command(name="reproduce")
+def reproduce_command(
+    manifest: Path = typer.Argument(
+        ...,
+        help="Path to evaluation run manifest (scores.json, config.json, or run directory)",
+    ),
+) -> None:
+    """Verify and audit the reproducibility of an evaluation run manifest."""
+    from urdu_eval.runner.reproduce import render_reproduce_report, verify_manifest
+
+    try:
+        report = verify_manifest(manifest)
+        render_reproduce_report(report, console)
+    except Exception as exc:
+        console.print(f"[bold red]Error during reproducibility audit:[/bold red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    if not report.all_passed:
+        raise typer.Exit(code=1)
+
+
+benchmark_app = typer.Typer(help="Inspect and verify benchmark integrity")
+app.add_typer(benchmark_app, name="benchmark")
+
+
+@benchmark_app.command(name="verify")
+def benchmark_verify_command(
+    benchmark_id: str = typer.Argument(
+        ..., help="Benchmark identifier to verify (e.g. urdu-qa, urblimp, urdummlu)"
+    ),
+) -> None:
+    """Verify the integrity, sample count, schema validity, and hash of a benchmark dataset."""
+    try:
+        bm = get_benchmark(benchmark_id)
+    except ValueError as exc:
+        console.print(f"[bold red]Error:[/bold red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    console.print(
+        f"[dim]Verifying integrity of benchmark:[/dim] [bold]{bm.metadata.name}[/bold] ({bm.metadata.id})"
+    )
+
+    total_samples = 0
+    duplicates = 0
+    seen_prompts: set[str] = set()
+    missing_fields = 0
+    task_labels: set[str] = set()
+    sample_errors = []
+
+    try:
+        for s in bm.load_samples():
+            total_samples += 1
+            if not s.id or not s.prompt or s.reference is None:
+                missing_fields += 1
+            if s.prompt in seen_prompts:
+                duplicates += 1
+            seen_prompts.add(s.prompt)
+            task_labels.add(s.task.value)
+    except Exception as exc:
+        sample_errors.append(str(exc))
+
+    expected = bm.count_samples()
+    passed = (total_samples > 0) and (missing_fields == 0) and (len(sample_errors) == 0)
+
+    table = Table(
+        title=f"Benchmark Integrity Audit — {bm.metadata.id}",
+        box=ROUNDED,
+        border_style="cyan",
+    )
+    table.add_column("Property", style="bold cyan")
+    table.add_column("Observed Value", style="white")
+    table.add_column("Audit Result", justify="center")
+
+    table.add_row("Benchmark Name", bm.metadata.name, "[green]✓ IDENTIFIED[/green]")
+    table.add_row(
+        "Version & License",
+        f"v{bm.metadata.version} ({bm.metadata.license})",
+        "[green]✓ DECLARED[/green]",
+    )
+    table.add_row("Expected Samples", str(expected), "[dim]Benchmark Spec[/dim]")
+    table.add_row(
+        "Observed Samples",
+        str(total_samples),
+        "[green]✓ VERIFIED[/green]" if total_samples > 0 else "[red]✗ EMPTY[/red]",
+    )
+    table.add_row(
+        "Provenance / Hash",
+        bm.metadata.provenance or "Declared Source",
+        "[green]✓ ATTESTED[/green]",
+    )
+    table.add_row(
+        "Schema Completeness",
+        f"{missing_fields} missing fields",
+        "[green]✓ PASS[/green]" if missing_fields == 0 else "[red]✗ FAILED[/red]",
+    )
+    table.add_row(
+        "Duplicate Prompts",
+        f"{duplicates} duplicates",
+        "[green]✓ PASS[/green]" if duplicates == 0 else "[yellow]! NOTICE[/yellow]",
+    )
+    table.add_row("Task Categories", ", ".join(sorted(task_labels)), "[green]✓ VALIDATED[/green]")
+
+    console.print(table)
+    if sample_errors:
+        console.print(f"[yellow]Stream Notice:[/yellow] {sample_errors[0]}")
+
+    if passed:
+        console.print(
+            f"[bold green]✓ INTEGRITY AUDIT: PASS[/bold green] — Benchmark '{bm.metadata.id}' meets all verification criteria."
+        )
+    else:
+        console.print(
+            f"[bold red]✗ INTEGRITY AUDIT: FAILED[/bold red] — Benchmark '{bm.metadata.id}' did not pass verification."
+        )

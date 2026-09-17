@@ -65,6 +65,16 @@ def normalize_roman_urdu(
     return normalize_whitespace(cleaned)
 
 
+def normalize_roman_urdu_strict(text: str) -> str:
+    """Strict Roman Urdu normalization (casing, whitespace, punctuation only; zero vowel mutation)."""
+    return normalize_roman_urdu(text, lower=True, remove_punct=True, collapse_vowels=False)
+
+
+def normalize_roman_urdu_phonetic(text: str) -> str:
+    """Phonetic Roman Urdu normalization with safe elongation collapse (3+ identical vowels collapsed)."""
+    return normalize_roman_urdu(text, lower=True, remove_punct=True, collapse_vowels=True)
+
+
 def are_roman_urdu_variants(word1: str, word2: str) -> bool:
     """Check whether two words belong to known Roman Urdu orthographic variation clusters.
 

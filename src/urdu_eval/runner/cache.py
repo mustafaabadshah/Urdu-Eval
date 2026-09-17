@@ -19,21 +19,36 @@ def compute_cache_key(
     prompt: str,
     temperature: float = 0.0,
     max_tokens: int = 1024,
+    top_p: float | None = 1.0,
+    seed: int | None = 42,
     system_prompt: str | None = None,
+    benchmark_id: str | None = None,
+    benchmark_version: str | None = None,
+    prompt_template_version: str | None = None,
     extra_params: dict[str, Any] | None = None,
 ) -> str:
-    """Generate a deterministic SHA-256 cache key from model parameters and prompt."""
+    """Generate a canonical SHA-256 cache key from all request parameters that affect generation.
+
+    Guarantees:
+    - Any alteration in hyperparameters (temperature, top_p, seed) produces a distinct key.
+    - Distinct system prompts, template versions, or benchmark versions will never collide in cache.
+    """
     payload = {
         "provider": provider.lower().strip(),
         "model": model.lower().strip(),
         "prompt": prompt.strip(),
-        "temperature": temperature,
+        "temperature": round(temperature, 4),
         "max_tokens": max_tokens,
-        "system_prompt": system_prompt or "",
+        "top_p": round(top_p, 4) if top_p is not None else 1.0,
+        "seed": seed,
+        "system_prompt": (system_prompt or "").strip(),
+        "benchmark_id": (benchmark_id or "").lower().strip(),
+        "benchmark_version": (benchmark_version or "").strip(),
+        "prompt_template_version": (prompt_template_version or "1.0").strip(),
         "extra_params": extra_params or {},
     }
-    dumped = json.dumps(payload, sort_keys=True)
-    return hashlib.sha256(dumped.encode("utf-8")).hexdigest()
+    canonical_request = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical_request.encode("utf-8")).hexdigest()
 
 
 class EvaluationCache:

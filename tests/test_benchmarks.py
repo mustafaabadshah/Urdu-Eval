@@ -25,9 +25,18 @@ def test_builtin_benchmark_discovery() -> None:
     assert "urdu-mmlu" in ids
 
     # All built-in dev suites must be marked as development sample
+    dev_ids = {
+        "urdu-qa",
+        "urdu-reasoning",
+        "urdu-translation",
+        "urdu-summary",
+        "urdu-roman",
+        "urdu-mmlu",
+    }
     for b in benchmarks:
-        assert b.is_development_sample is True
-        assert b.version == "0.1.0"
+        if b.id in dev_ids:
+            assert b.is_development_sample is True
+            assert b.version == "0.1.0"
 
 
 def test_get_benchmark_samples() -> None:
