@@ -28,14 +28,18 @@ class MockProvider(ModelProvider):
     ) -> None:
         self.model = model
         self.default_response = default_response
-        self.canned_responses = canned_responses or {
-            "دارالحکومت": "اسلام آباد",
-            "dar-ul-hukoomat": "Islamabad",
-            "darul hukoomat": "Islamabad",
-            "Faisal Masjid": "Islamabad",
-            "سیب": "۳",
-            "Translate to English": "Seeking knowledge is an obligation upon every Muslim man and woman.",
-        }
+        self.canned_responses = (
+            canned_responses
+            if canned_responses is not None
+            else {
+                "دارالحکومت": "اسلام آباد",
+                "dar-ul-hukoomat": "Islamabad",
+                "darul hukoomat": "Islamabad",
+                "Faisal Masjid": "Islamabad",
+                "سیب": "۳",
+                "Translate to English": "Seeking knowledge is an obligation upon every Muslim man and woman.",
+            }
+        )
         self.simulate_latency_ms = simulate_latency_ms
         self.should_fail = should_fail
         self.failure_message = failure_message
