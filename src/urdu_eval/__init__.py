@@ -23,7 +23,7 @@ from urdu_eval.models import (
 )
 
 __version__ = "0.2.0"
-__author__ = "Syed Mustafa Badshah, UrduEval Contributors"
+__author__ = "Syed Mustafa Badshah"
 __license__ = "Apache-2.0"
 
 __all__ = [

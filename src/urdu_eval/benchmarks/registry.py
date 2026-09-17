@@ -22,8 +22,10 @@ class FileBenchmark(Benchmark):
         if not self.file_path.exists():
             raise FileNotFoundError(f"Benchmark sample file not found: {self.file_path}")
 
-        # Compute hash and count
-        self.metadata.provenance = f"SHA-256:{compute_dataset_hash(self.file_path)}"
+        # Compute real 64-char SHA-256 hash and count
+        real_hash = compute_dataset_hash(self.file_path)
+        self.metadata.dataset_sha256 = real_hash
+        self.metadata.provenance = f"SHA-256:{real_hash}"
         val = validate_dataset(self.file_path)
         self._count = val.total_samples
 

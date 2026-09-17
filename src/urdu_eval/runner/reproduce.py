@@ -160,21 +160,21 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
             "Run evaluated DEVELOPMENT samples; not comparable to official benchmark leaderboards."
         )
 
-    # 4. Check Dataset Hash & Sample Count
+    # 4. Check Dataset Cryptographic Hash & Provenance
     recorded_hash = str(metadata.get("dataset_sha256") or metadata.get("dataset_hash", ""))
     if bench_obj is not None:
-        current_hash = bench_obj.metadata.provenance
+        current_hash = bench_obj.metadata.dataset_sha256 or bench_obj.metadata.provenance
         if recorded_hash and current_hash:
-            hash_match = recorded_hash == current_hash
+            hash_match = recorded_hash.lower() == current_hash.lower()
             checks.append(
                 CheckItem(
                     name="Dataset SHA-256 Hash",
                     passed=hash_match,
                     status="VERIFIED" if hash_match else "MISMATCH",
-                    expected=recorded_hash[:16] + "..."
-                    if len(recorded_hash) > 16
+                    expected=recorded_hash[:12] + "..."
+                    if len(recorded_hash) > 12
                     else recorded_hash,
-                    observed=current_hash[:16] + "..." if len(current_hash) > 16 else current_hash,
+                    observed=current_hash[:12] + "..." if len(current_hash) > 12 else current_hash,
                 )
             )
         else:
@@ -183,8 +183,8 @@ def verify_manifest(manifest_path: str | Path) -> ReproduceReport:
                     name="Dataset Provenance",
                     passed=True,
                     status="RECORDED",
-                    expected=recorded_hash or "N/A",
-                    observed=current_hash or "N/A",
+                    expected=recorded_hash[:12] if recorded_hash else "N/A",
+                    observed=current_hash[:12] if current_hash else "N/A",
                 )
             )
 

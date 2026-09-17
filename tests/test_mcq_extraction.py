@@ -71,3 +71,13 @@ def test_extract_mcq_ambiguous_refusal() -> None:
     # 5. Multiple conflicting option text mentions
     options = ["اسلام آباد", "لاہور", "کراچی", "پشاور"]
     assert extract_mcq_choice("یہ اسلام آباد بھی ہو سکتا ہے اور لاہور بھی", options=options) is None
+
+    # 6. Disjunctive hedging with explanation
+    assert extract_mcq_choice("C یا D کیونکہ دونوں درست معلوم ہوتے ہیں") is None
+    assert extract_mcq_choice("میرا حتمی جواب C ہے، اگرچہ A بھی ممکن ہے") is None
+
+
+def test_extract_mcq_answer_with_explanation() -> None:
+    """Verify single unambiguous answer followed by explanation extracts correctly."""
+    assert extract_mcq_choice("C کیونکہ سوال میں اسلام آباد کا پوچھا گیا ہے") == "C"
+    assert extract_mcq_choice("B. اس کی وجہ یہ ہے کہ زمین سورج کے گرد گھومتی ہے۔") == "B"

@@ -11,5 +11,4 @@ def test_package_version() -> None:
 def test_package_metadata() -> None:
     """Verify package metadata attributes."""
     assert urdu_eval.__license__ == "Apache-2.0"
-    assert "Syed Mustafa Badshah" in urdu_eval.__author__
-    assert "UrduEval Contributors" in urdu_eval.__author__
+    assert urdu_eval.__author__ == "Syed Mustafa Badshah"

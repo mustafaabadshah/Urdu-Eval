@@ -36,6 +36,8 @@ class CustomBenchmark(Benchmark):
             license="User Defined",
             version="1.0",
             provenance=f"SHA-256:{dataset_hash}",
+            dataset_sha256=dataset_hash,
+            dataset_scope="official",
             is_development_sample=False,
         )
 

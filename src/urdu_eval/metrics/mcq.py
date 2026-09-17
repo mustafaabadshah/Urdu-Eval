@@ -33,7 +33,12 @@ _DISJUNCTION_CONJUNCTION_PATTERN = re.compile(
 )
 
 _HEDGING_MULTI_PATTERN = re.compile(
-    r"(?:لگتا|ممکن|شاید|ہو سکتا|doubt|think|maybe|perhaps)\s*.*?\b([A-Da-d])\b.*?(?:شاید|لیکن|یا|بلکہ|or|but|maybe)\s*.*?\b([A-Da-d])\b",
+    r"(?:لگتا|ممکن|شاید|ہو سکتا|doubt|think|maybe|perhaps)\s*.*?\b([A-Da-d])\b.*?(?:شاید|لیکن|یا|بلکہ|اگرچہ|حالانکہ|or|but|maybe)\s*.*?\b([A-Da-d])\b",
+    re.UNICODE | re.IGNORECASE,
+)
+
+_HEDGING_QUALIFICATION = re.compile(
+    r"\b([A-Da-d])\b.*?(?:اگرچہ|حالانکہ|لیکن|مگر|although|though|however)\s*.*?\b([A-Da-d])\b.*?(?:ممکن|شاید|ہو سکتا|possible|plausible)",
     re.UNICODE | re.IGNORECASE,
 )
 
@@ -75,6 +80,12 @@ def extract_mcq_choice(
         c1, c2 = hedg_match.group(1).upper(), hedg_match.group(2).upper()
         if c1 in valid_set and c2 in valid_set and c1 != c2:
             return None  # Ambiguous: e.g. "مجھے لگتا ہے A، لیکن شاید C"
+
+    hedg_qual = _HEDGING_QUALIFICATION.search(cleaned)
+    if hedg_qual:
+        c1, c2 = hedg_qual.group(1).upper(), hedg_qual.group(2).upper()
+        if c1 in valid_set and c2 in valid_set and c1 != c2:
+            return None  # Ambiguous: e.g. "میرا حتمی جواب C ہے، اگرچہ A بھی ممکن ہے"
 
     # 3. Check prioritized explicit declaration patterns
     declared_candidates: list[str] = []

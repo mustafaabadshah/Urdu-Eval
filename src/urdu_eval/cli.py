@@ -594,14 +594,27 @@ def benchmark_verify_command(
         f"v{bm.metadata.version} ({bm.metadata.license})",
         "[green]✓ DECLARED[/green]",
     )
+
+    is_dev = bm.metadata.is_development_sample or bm.metadata.dataset_scope == "development"
+    table.add_row(
+        "Dataset Scope",
+        "DEVELOPMENT" if is_dev else "OFFICIAL",
+        "[yellow]! DEVELOPMENT[/yellow]" if is_dev else "[green]✓ OFFICIAL[/green]",
+    )
     table.add_row("Expected Samples", str(expected), "[dim]Benchmark Spec[/dim]")
     table.add_row(
         "Observed Samples",
         str(total_samples),
         "[green]✓ VERIFIED[/green]" if total_samples > 0 else "[red]✗ EMPTY[/red]",
     )
+    if bm.metadata.dataset_sha256:
+        table.add_row(
+            "SHA-256 Hash",
+            bm.metadata.dataset_sha256[:16] + "...",
+            "[green]✓ COMPUTED[/green]",
+        )
     table.add_row(
-        "Provenance / Hash",
+        "Provenance Source",
         bm.metadata.provenance or "Declared Source",
         "[green]✓ ATTESTED[/green]",
     )
@@ -622,9 +635,17 @@ def benchmark_verify_command(
         console.print(f"[yellow]Stream Notice:[/yellow] {sample_errors[0]}")
 
     if passed:
-        console.print(
-            f"[bold green]✓ INTEGRITY AUDIT: PASS[/bold green] — Benchmark '{bm.metadata.id}' meets all verification criteria."
-        )
+        if is_dev:
+            official_sz = bm.metadata.official_benchmark_size or "N/A"
+            console.print(
+                f"[bold yellow]! INTEGRITY AUDIT: PASS — development dataset integrity verified[/bold yellow]\n"
+                f"  [dim]Observed: {total_samples} | Official size: {official_sz} | Dataset scope: DEVELOPMENT | Official evaluation: NO[/dim]"
+            )
+        else:
+            console.print(
+                f"[bold green]✓ INTEGRITY AUDIT: PASS — official benchmark verified[/bold green]\n"
+                f"  [dim]Observed: {total_samples} | Dataset scope: OFFICIAL | Full evaluation ready[/dim]"
+            )
     else:
         console.print(
             f"[bold red]✗ INTEGRITY AUDIT: FAILED[/bold red] — Benchmark '{bm.metadata.id}' did not pass verification."

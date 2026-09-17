@@ -262,6 +262,32 @@ class EvaluationRunner:
         ci_cfg = self.config.ci_config
         contam_info = self.config.contamination
 
+        # Resolve real cryptographic SHA-256 for dataset bytes
+        from urdu_eval.dataset import compute_dataset_hash
+
+        real_dataset_sha256 = getattr(self.benchmark.metadata, "dataset_sha256", "")
+        if not real_dataset_sha256 and self.config.dataset_path:
+            p = Path(self.config.dataset_path)
+            if p.exists() and p.is_file():
+                real_dataset_sha256 = compute_dataset_hash(p)
+        if not real_dataset_sha256 and hasattr(self.benchmark, "file_path"):
+            p = self.benchmark.file_path
+            if isinstance(p, Path) and p.exists() and p.is_file():
+                real_dataset_sha256 = compute_dataset_hash(p)
+        if not real_dataset_sha256:
+            # Check dev_samples directory for registered benchmarks
+            dev_p = (
+                Path(__file__).parent.parent
+                / "benchmarks"
+                / "dev_samples"
+                / f"{self.benchmark.metadata.id.replace('-', '_')}.jsonl"
+            )
+            if dev_p.exists():
+                real_dataset_sha256 = compute_dataset_hash(dev_p)
+
+        dataset_sha256 = real_dataset_sha256 or "N/A (Streaming/External)"
+        dataset_hash = real_dataset_sha256 or self.benchmark.metadata.provenance
+
         run_metadata = RunMetadata(
             run_id=final_run_id,
             timestamp=timestamp,
@@ -269,8 +295,10 @@ class EvaluationRunner:
             benchmark=self.benchmark.metadata,
             benchmark_id=self.benchmark.metadata.id,
             benchmark_version=self.benchmark.metadata.version,
-            dataset_hash=self.benchmark.metadata.provenance,
-            dataset_sha256=self.benchmark.metadata.provenance,
+            dataset_hash=dataset_hash,
+            dataset_sha256=dataset_sha256,
+            dataset_source=self.benchmark.metadata.source,
+            dataset_provenance=self.benchmark.metadata.provenance,
             dataset_size=total,
             dataset_scope=dataset_scope,
             is_official_evaluation=is_official,
@@ -340,6 +368,8 @@ class EvaluationRunner:
             "benchmark_id": meta.benchmark_id,
             "benchmark_version": meta.benchmark_version,
             "dataset_sha256": meta.dataset_sha256,
+            "dataset_source": meta.dataset_source,
+            "dataset_provenance": meta.dataset_provenance,
             "dataset_size": meta.dataset_size,
             "dataset_scope": meta.dataset_scope,
             "is_official_evaluation": meta.is_official_evaluation,

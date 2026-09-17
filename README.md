@@ -22,7 +22,7 @@
 
 ## 🌟 What is UrduEval?
 
-Urdu is spoken by over **230 million people worldwide** *(Ethnologue / Eberhard et al., 2024; also cited by UrduMMLU)*, yet mainstream AI evaluation harnesses treat it as an afterthought. General-purpose evaluation frameworks often fall short on Urdu because they lack Urdu-specific normalization, Roman Urdu handling, linguistic failure diagnostics, and native script adapters:
+Urdu is spoken by over **230 million people worldwide** *(Ethnologue / Eberhard et al., 2024; also cited by UrduMMLU)*, yet mainstream AI evaluation harnesses treat it as an afterthought. General-purpose evaluation frameworks often lack Urdu-specific normalization, Roman Urdu handling, linguistic diagnostics, and benchmark adapters:
 - **Orthographic and Unicode Variation**: Arabic and Persian keyboard layouts produce visually similar yet semantically distinct code points, while characters such as Do-Chashmi Heh (`ھ`, indicating consonant aspiration) and Teh Marbuta (`ة`, preserved in Arabic loanwords) must not be indiscriminately collapsed, as doing so alters lexical meaning.
 - **Diacritics & Aerab**: Zabar, Zer, Pesh, Tashdeed are inconsistently present or omitted in digital text.
 - **Roman Urdu Orthography**: Millions communicate using Latin script (`"Pakistan aik azeem mulk hai"`), where phonetic spelling varies widely without standard dictionaries (`"khubsurat"` vs `"khoobsurat"` vs `"khobsurat"`).
@@ -186,38 +186,65 @@ urdu-eval reproduce results/run_20260917_urblimp/manifest.json
 │ UrduEval Version      │    ✓ MATCH    │ 0.2.0            │ 0.2.0             │
 │ Benchmark Registry    │    ✓ FOUND    │ urblimp (v1.0.0) │ urblimp (v1.0.0)  │
 │ Dataset Scope         │ ! DEVELOPMENT │ development      │ development       │
-│ Dataset SHA-256 Hash  │  ✓ VERIFIED   │ Adeeba et al.    │ Adeeba et al.     │
+│ Dataset SHA-256 Hash  │  ✓ VERIFIED   │ c7da7783a00f...  │ c7da7783a00f...   │
 │ Normalization Profile │  ✓ SUPPORTED  │ conservative     │ conservative      │
-│ Prompt Protocol       │  ✓ SPECIFIED  │ v1.0 (few-shot:0)│ v1.0 (few-shot:0) │
-│ Model Hyperparameters │    ✓ FIXED    │ llama3.1 (temp=0)│ llama3.1 (temp=0) │
+│ Prompt Protocol       │  ✓ SPECIFIED  │ v1.0 (few-shot:  │ v1.0 (few-shot:   │
+│                       │               │ 0)               │ 0)                │
+│ Model Hyperparameters │    ✓ FIXED    │ mock-urdu-model  │ mock-urdu-model   │
+│                       │               │ (temp=0.0,       │ (temp=0.0,        │
+│                       │               │ seed=42)         │ seed=42)          │
 ╰───────────────────────┴───────────────┴──────────────────┴───────────────────╯
-✓ REPRODUCIBILITY AUDIT: PASS — All experimental parameters match.
+Recorded Benchmark Scores:
+  exact_match: 0.0%  |  f1: 0.0%
+Notice: Run evaluated DEVELOPMENT samples; not comparable to official benchmark leaderboards.
+✓ REPRODUCIBILITY AUDIT: PASS — All experimental parameters, protocol versions, and dataset hashes match.
 ```
 
 ### 2. Benchmark Dataset Verification (`urdu-eval benchmark verify`)
 Verify external and custom datasets for sample count, schema validity, prompt uniqueness, and cryptographic SHA-256 provenance before beginning costly model inference:
 
 ```bash
-urdu-eval benchmark verify urdu-qa
 urdu-eval benchmark verify urblimp
+```
+
+```text
+                      Benchmark Integrity Audit — urblimp                       
+╭─────────────────────┬───────────────────────────────────────┬────────────────╮
+│ Property            │ Observed Value                        │  Audit Result  │
+├─────────────────────┼───────────────────────────────────────┼────────────────┤
+│ Benchmark Name      │ UrBLiMP (Linguistic Minimal Pairs)    │  ✓ IDENTIFIED  │
+│ Version & License   │ v1.0.0 (CC-BY-4.0)                    │   ✓ DECLARED   │
+│ Dataset Scope       │ DEVELOPMENT                           │ ! DEVELOPMENT  │
+│ Expected Samples    │ 10                                    │ Benchmark Spec │
+│ Observed Samples    │ 10                                    │   ✓ VERIFIED   │
+│ SHA-256 Hash        │ c7da7783a00fcf5d...                   │   ✓ COMPUTED   │
+│ Provenance Source   │ Adeeba et al. (ACL 2026) /            │   ✓ ATTESTED   │
+│                     │ arXiv:2508.01006                      │                │
+│ Schema Completeness │ 0 missing fields                      │     ✓ PASS     │
+│ Duplicate Prompts   │ 0 duplicates                          │     ✓ PASS     │
+│ Task Categories     │ minimal_pair                          │  ✓ VALIDATED   │
+╰─────────────────────┴───────────────────────────────────────┴────────────────╯
+! INTEGRITY AUDIT: PASS — development dataset integrity verified
+  Observed: 10 | Official size: 5696 | Dataset scope: DEVELOPMENT | Official evaluation: NO
 ```
 
 ---
 
 ## 📊 Statistical Engine & Bootstrap Confidence Intervals
 
-Every metric reported by UrduEval includes **95% Confidence Intervals**:
+Every primary metric reports a **95% Confidence Interval** using Wilson score intervals for binomial metrics and percentile bootstrap intervals for continuous/bounded metrics by default:
 - **Binomial Metrics** (`exact_match`, `accuracy`): Wilson score intervals.
 - **Continuous & Bounded Metrics** (`f1`, `chrf++`, `bleu`, `rouge-l`): **Non-parametric percentile bootstrap confidence intervals** ($1,000$ resamples, deterministically seeded with `seed=42`). This eliminates invalid normal-distribution assumptions on skewed or bounded scores.
 
 ```bash
 # Configure confidence interval estimation method
-urdu-eval run --benchmark urdu-qa --ci-method auto       # Default (Wilson + Bootstrap)
-urdu-eval run --benchmark urdu-qa --ci-method bootstrap  # Pure bootstrap for all
-urdu-eval run --benchmark urdu-qa --ci-method t          # Classic Student-t SE
+urdu-eval run --benchmark urdu-qa --ci-method auto       # Default: Wilson for binomial, Bootstrap for continuous
+urdu-eval run --benchmark urdu-qa --ci-method bootstrap  # Percentile bootstrap for all metrics
+urdu-eval run --benchmark urdu-qa --ci-method wilson     # Wilson score for binary; bootstrap fallback
+urdu-eval run --benchmark urdu-qa --ci-method t          # Classic Student-t standard error
 ```
 
-The exact CI method, resample count, and random seed are serialized directly into the run manifest `scores.json`.
+The exact CI method, resample count, and random seed are serialized directly into the run manifest `scores.json` and verified by `urdu-eval reproduce`.
 
 ---
 
@@ -377,11 +404,10 @@ urdu-eval cache clear
 If you use UrduEval in your academic work, research, or product development, please cite:
 
 ```bibtex
-@software{urdu_eval2026,
+@software{badshah2026urdueval,
   author = {Badshah, Syed Mustafa},
-  title = {UrduEval: Open Evaluation Infrastructure for Urdu and Roman Urdu AI},
+  title = {UrduEval: Open Evaluation Layer for Urdu and Roman Urdu AI},
   year = {2026},
-  version = {0.2.0},
   url = {https://github.com/mustafaabadshah/Urdu-Eval}
 }
 ```

@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from urdu_eval.benchmarks.base import Benchmark
-from urdu_eval.dataset import load_dataset
+from urdu_eval.dataset import compute_dataset_hash, load_dataset
 from urdu_eval.enums import Language, Script, TaskType
 from urdu_eval.models import BenchmarkMetadata, Sample
 
@@ -61,6 +61,7 @@ class UrBLiMPAdapter(Benchmark):
         self.split = split
         self.use_dev_fallback = use_dev_fallback
 
+        dev_sha256 = compute_dataset_hash(_DEV_SAMPLE_PATH) if _DEV_SAMPLE_PATH.exists() else ""
         phen_desc = f" [Phenomenon: {self.phenomenon}]" if self.phenomenon else ""
         self.metadata = BenchmarkMetadata(
             id="urblimp" if not self.phenomenon else f"urblimp-{self.phenomenon.replace('_', '-')}",
@@ -77,6 +78,7 @@ class UrBLiMPAdapter(Benchmark):
             license="CC-BY-4.0",
             version="1.0.0",
             provenance="Adeeba et al. (ACL 2026) / arXiv:2508.01006",
+            dataset_sha256=dev_sha256,
             citation=CITATION,
             is_development_sample=True,
             dataset_scope="development",

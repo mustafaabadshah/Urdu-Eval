@@ -22,9 +22,10 @@ def test_validate_valid_dataset() -> None:
     assert result.scripts_found.get("urdu") == 3
     assert result.scripts_found.get("roman_urdu") == 2
 
-    # Check hash is non-empty
+    # Check hash is valid 64-character SHA-256 hex digest
     h = compute_dataset_hash(sample_file)
-    assert len(h) == 16
+    assert len(h) == 64
+    assert all(c in "0123456789abcdef" for c in h)
 
 
 def test_validate_invalid_dataset() -> None:

@@ -77,6 +77,7 @@ class BenchmarkMetadata(BaseModel):
     license: str
     version: str
     provenance: str = ""
+    dataset_sha256: str = ""
     citation: str = ""
     is_development_sample: bool = False
     dataset_scope: str = "official"  # "official" or "development"
@@ -183,6 +184,8 @@ class RunMetadata(BaseModel):
     benchmark_version: str = "1.0.0"
     dataset_hash: str = ""
     dataset_sha256: str = ""
+    dataset_source: str = ""
+    dataset_provenance: str = ""
     dataset_size: int = 0
     dataset_scope: str = "official"  # "official" or "development"
     is_official_evaluation: bool = True

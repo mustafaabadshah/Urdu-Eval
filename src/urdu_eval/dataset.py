@@ -59,7 +59,7 @@ def compute_dataset_hash(file_path: str | Path) -> str:
     with path.open("rb") as f:
         while chunk := f.read(65536):
             hasher.update(chunk)
-    return hasher.hexdigest()[:16]
+    return hasher.hexdigest()
 
 
 def validate_dataset(file_path: str | Path) -> DatasetValidationResult:
