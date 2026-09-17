@@ -1,0 +1,6 @@
+{"id": "inv_001", "task": "qa", "language": "ur", "script": "urdu", "prompt": "لاہور کس ملک میں ہے؟", "reference": "پاکستان"}
+{"id": "inv_001", "task": "qa", "language": "ur", "script": "urdu", "prompt": "کراچی کس ملک میں ہے؟", "reference": "پاکستان"}
+{bad_json}
+{"id": "inv_003", "task": "unknown_task", "prompt": "ٹیسٹ", "reference": "ٹیسٹ"}
+{"id": "inv_004", "prompt": "صرف سوال", "reference": ""}
+{"id": "inv_005", "prompt": "", "reference": "صرف جواب"}
