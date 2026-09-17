@@ -8,6 +8,9 @@ from typing import Literal
 
 from urdu_eval.normalization.text import normalize_whitespace
 
+# Regex pattern for Arabic / Urdu Unicode blocks (0600-06FF, 0750-077F, FB50-FDFF, FE70-FEFF)
+URDU_SCRIPT_REGEX = re.compile(r"[\u0600-\u06ff\u0750-\u077f\ufb50-\ufdff\ufe70-\ufeff]")
+
 # Urdu aerab / diacritics:
 # Zabar (064E), Zer (0650), Pesh (064F), Tashdeed (0651), Jazm/Sukun (0652),
 # Tanween Fatha (064B), Tanween Damma (064C), Tanween Kasra (064D),

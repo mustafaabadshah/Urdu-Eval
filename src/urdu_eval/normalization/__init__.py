@@ -9,6 +9,7 @@ from urdu_eval.normalization.text import (
     normalize_whitespace,
 )
 from urdu_eval.normalization.urdu import (
+    URDU_SCRIPT_REGEX,
     normalize_arabic_variants,
     normalize_digits,
     normalize_urdu,
@@ -16,6 +17,7 @@ from urdu_eval.normalization.urdu import (
 )
 
 __all__ = [
+    "URDU_SCRIPT_REGEX",
     "normalize_whitespace",
     "normalize_punctuation",
     "remove_diacritics",
