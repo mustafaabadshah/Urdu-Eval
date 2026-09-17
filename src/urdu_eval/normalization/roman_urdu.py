@@ -25,11 +25,13 @@ COMMON_ROMAN_URDU_VARIATION_CLUSTERS = [
     {"bhi", "b", "bh"},
     {"kaise", "kese", "kaisay"},
     {"aise", "ese", "aisay"},
-    {"bohat", "bht", "bahut", "bohot"},
+    {"bohat", "bht", "bahut", "bohot", "boht"},
     {"acha", "achha", "achaa"},
     {"nahi", "nahin", "nhi", "nahee"},
     {"karachi", "karaci"},
     {"islamabad", "islam abad"},
+    {"khubsurat", "khoobsurat", "khubsoorat", "khoobsoorat"},
+    {"zaroorat", "zarurat"},
 ]
 
 

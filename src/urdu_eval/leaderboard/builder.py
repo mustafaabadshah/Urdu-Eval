@@ -52,6 +52,8 @@ def build_leaderboard(
                 benchmark_version=run_res.metadata.benchmark.version,
                 samples=run_res.total_samples,
                 metrics=run_res.metrics,
+                raw_metrics=run_res.raw_metrics,
+                confidence_intervals=run_res.confidence_intervals,
                 latency_ms=run_res.mean_latency_ms,
                 date=run_res.metadata.timestamp[:10],
                 run_id=run_res.run_id,

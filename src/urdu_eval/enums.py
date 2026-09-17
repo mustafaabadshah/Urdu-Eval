@@ -53,3 +53,12 @@ class FailureCategory(str, Enum):
     REASONING_ERROR = "reasoning_error"
     INSTRUCTION_VIOLATION = "instruction_violation"
     ROMAN_URDU_SPELLING = "roman_urdu_spelling"
+
+
+class NormalizationProfile(str, Enum):
+    """Normalization profiles with explicit linguistic guarantees."""
+
+    RAW = "raw"
+    CONSERVATIVE = "conservative"
+    STANDARD = "standard"
+    ROMAN_URDU = "roman_urdu"

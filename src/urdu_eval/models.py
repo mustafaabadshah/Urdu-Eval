@@ -122,6 +122,7 @@ class RunConfig(BaseModel):
     benchmark_id: str | None = None
     dataset_path: str | None = None
     metrics: list[str] = Field(default_factory=lambda: ["exact_match", "f1"])
+    normalization_profile: str = "conservative"
     use_cache: bool = True
     workers: int = 1
     max_samples: int | None = None
@@ -139,8 +140,11 @@ class RunMetadata(BaseModel):
     benchmark: BenchmarkMetadata
     dataset_hash: str
     model_settings: ModelConfig = Field(alias="model_config")
+    normalization_profile: str = "conservative"
     python_version: str
     platform: str
+    seed: int | None = None
+    top_p: float | None = None
 
 
 class RunResult(BaseModel):
@@ -149,6 +153,8 @@ class RunResult(BaseModel):
     run_id: str
     metadata: RunMetadata
     metrics: dict[str, float]
+    raw_metrics: dict[str, float] = Field(default_factory=dict)
+    confidence_intervals: dict[str, tuple[float, float]] = Field(default_factory=dict)
     samples: list[SampleResult]
     failure_summary: dict[str, int] = Field(default_factory=dict)
     total_samples: int = 0
@@ -165,6 +171,8 @@ class LeaderboardEntry(BaseModel):
     benchmark_version: str
     samples: int
     metrics: dict[str, float]
+    raw_metrics: dict[str, float] = Field(default_factory=dict)
+    confidence_intervals: dict[str, tuple[float, float]] = Field(default_factory=dict)
     latency_ms: float
     estimated_cost: float | None = None
     date: str

@@ -190,16 +190,29 @@ class EvaluationRunner:
             sum(r.latency_ms for r in ordered_sample_results) / total if total > 0 else 0.0
         )
 
+        from urdu_eval.metrics.stats import compute_metric_ci
+
         aggregated_metrics: dict[str, float] = {}
+        confidence_intervals: dict[str, tuple[float, float]] = {}
         for m in self.metrics:
             valid_scores = [
                 r.metrics[m.name]
                 for r in ordered_sample_results
                 if m.name in r.metrics and r.error is None
             ]
-            aggregated_metrics[m.name] = (
-                sum(valid_scores) / len(valid_scores) if valid_scores else 0.0
-            )
+            mean_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0.0
+            aggregated_metrics[m.name] = mean_score
+            confidence_intervals[m.name] = compute_metric_ci(m.name, valid_scores)
+
+        # Compute raw unnormalized exact match for transparency
+        raw_em_scores = [
+            1.0 if r.prediction.strip() == str(r.reference).strip() else 0.0
+            for r in ordered_sample_results
+            if r.error is None
+        ]
+        raw_metrics: dict[str, float] = {
+            "raw_exact_match": sum(raw_em_scores) / len(raw_em_scores) if raw_em_scores else 0.0
+        }
 
         # Compute failure breakdown
         failure_summary: dict[str, int] = {}
@@ -217,14 +230,19 @@ class EvaluationRunner:
             benchmark=self.benchmark.metadata,
             dataset_hash=self.benchmark.metadata.provenance,
             model_config=self.config.model,
+            normalization_profile=self.config.normalization_profile,
             python_version=sys.version.split()[0],
             platform=f"{platform.system()} {platform.release()}",
+            seed=getattr(self.config.model, "seed", None),
+            top_p=getattr(self.config.model, "top_p", None),
         )
 
         run_result = RunResult(
             run_id=final_run_id,
             metadata=run_metadata,
             metrics=aggregated_metrics,
+            raw_metrics=raw_metrics,
+            confidence_intervals=confidence_intervals,
             samples=ordered_sample_results,
             failure_summary=failure_summary,
             total_samples=total,

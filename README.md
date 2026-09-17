@@ -1,20 +1,20 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="UrduEval Banner" width="100%">
+<img src="assets/banner.png" alt="UrduEval Banner" width="100%">
 
 <br/>
 
-[![PyPI Version](https://img.shields.io/badge/pypi-v0.1.0-blue.svg?logo=pypi&logoColor=white)](https://pypi.org/project/urdu-eval/)
+[![PyPI Version](https://img.shields.io/badge/pypi-v0.1.1-blue.svg?logo=pypi&logoColor=white)](https://pypi.org/project/urdu-eval/)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-71%20passed-10B981.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-80%20passed-10B981.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)](tests/)
 [![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type Checked](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://github.com/python/mypy)
 
-**Measure how well AI models understand, reason, translate, and speak Urdu.**
+**The open, unified evaluation harness for Urdu and Roman Urdu AI.**
 
-[Quick Start](#-quick-start) • [Live Demo](#-terminal-in-action) • [Architecture](#-architecture) • [Custom Datasets](#-custom-datasets) • [Metrics & Normalization](#-normalization--linguistic-nuance) • [Interactive Reports](#-interactive-reports) • [Leaderboard](#-comparative-leaderboard)
+[Quick Start](#-quick-start) • [Live Demo](#-terminal-in-action) • [Architecture](#-architecture) • [Custom Datasets](#-custom-datasets) • [Normalization Profiles](#-linguistic-normalization-profiles) • [UrduMMLU Integration](#-urdummlu-integration--domains) • [Interactive Reports](#-interactive-reports) • [Development Comparison](#-development-run-comparison--leaderboard-protocol)
 
 </div>
 
@@ -28,7 +28,7 @@ Urdu is spoken by over **230 million people worldwide**, yet mainstream AI evalu
 - **Roman Urdu Orthography**: Millions communicate using Latin script (`"Pakistan aik azeem mulk hai"`), where phonetic spelling varies widely without standard dictionaries (`"khubsurat"` vs `"khoobsurat"` vs `"khobsurat"`).
 - **Silent Language Drift**: Models frequently switch to Arabic, Hindi, or English mid-sentence when prompted in Urdu.
 
-**UrduEval** is the **open, rigorous evaluation layer** built specifically to solve these challenges. It provides a modular, reproducible evaluation harness for testing local LLMs (via Ollama or HuggingFace) and cloud models (OpenAI, Anthropic, OpenRouter) against Urdu script, Roman Urdu, and cross-lingual tasks.
+Rather than claiming to be a single isolated benchmark, **UrduEval is the open, unified evaluation harness** for Urdu NLP. It bridges established community benchmarks (such as **UrduMMLU**, **UrBLiMP**, and **Urdu Bench**), local LLMs (via Ollama or HuggingFace), cloud APIs (OpenAI, Anthropic, OpenRouter), safe linguistic normalization profiles, statistical confidence intervals, and reproducible diagnostic reports into a single, cohesive CLI and Python library.
 
 ---
 
@@ -36,7 +36,7 @@ Urdu is spoken by over **230 million people worldwide**, yet mainstream AI evalu
 
 <div align="center">
   <img src="assets/demo.gif" alt="UrduEval CLI Demo" width="90%">
-  <p><em>Watch UrduEval evaluate an Ollama model on Urdu QA with live progress, metrics, and error diagnostics.</em></p>
+  <p><em>Watch UrduEval evaluate an Ollama model on Urdu QA with live progress, 95% confidence intervals, and error diagnostics.</em></p>
 </div>
 
 ---
@@ -45,7 +45,7 @@ Urdu is spoken by over **230 million people worldwide**, yet mainstream AI evalu
 
 ### 1. Installation
 
-Install the lightweight core package with zero heavyweight ML bloat:
+Install the lightweight core package with zero heavyweight ML dependencies:
 
 ```bash
 pip install urdu-eval
@@ -85,10 +85,11 @@ urdu-eval providers
 | `urdu-translation` | Bidirectional Translation | Urdu & English | 12 | Urdu-to-English & English-to-Urdu with BLEU and chrF++ |
 | `urdu-summary` | Text Summarization | Urdu Script | 10 | News articles and literature summarization |
 | `urdu-roman` | Roman Urdu Understanding | Roman Urdu (Latin) | 12 | Conversational Roman Urdu QA and comprehension |
-| `urdu-mmlu` | Multi-subject MCQA | Urdu Script | 12 | Curated sample of humanities, STEM, and social sciences |
+| `urdu-mmlu` | Multi-subject MCQA | Urdu Script | 12 | Curated development sample across humanities and sciences |
+| `urdummlu` | Massive Multitask Understanding | Urdu Script | 26,431 | Full MBZUAI UrduMMLU dataset across 5 macro-domains |
 
 > [!NOTE]
-> **Methodological Honesty**: Built-in benchmark suites contain carefully verified **development samples (10–15 items)** intended for smoke testing and regression testing. They are **not** presented as official academic leaderboards. For large-scale evaluations, point UrduEval to your own JSONL files or public dataset adapters (`UrduMMLUAdapter`, `UrduBenchAdapter`).
+> **Methodological Honesty**: Built-in benchmark suites (`urdu-qa`, `urdu-reasoning`, etc.) provide verified **development samples (10–15 items)** designed for smoke testing, developer integration, and continuous integration. They are **not** presented as official academic leaderboards. For formal evaluations, point UrduEval to full community datasets (`urdummlu`) or your own verified `.jsonl` files.
 
 ---
 
@@ -122,9 +123,26 @@ Set your `OPENROUTER_API_KEY`:
 urdu-eval run --provider openrouter --model deepseek/deepseek-r1 --benchmark urdu-translation
 ```
 
-#### E. Offline Mock Provider (For CI/CD and Pipeline Verification)
+#### E. Offline Mock Provider (For CI/CD and Testing)
 ```bash
 urdu-eval run --provider mock --benchmark urdu-qa
+```
+
+---
+
+## 🏛 UrduMMLU Integration & Domains
+
+UrduEval provides first-class streaming support for the **UrduMMLU** benchmark (MBZUAI, 26,431 verified questions):
+
+```bash
+# Run full UrduMMLU dataset (requires 'pip install datasets')
+urdu-eval run --benchmark urdummlu --provider ollama --model llama3.1
+
+# Run specific macro-domains
+urdu-eval run --benchmark urdummlu-stem --provider openai --model gpt-4o
+urdu-eval run --benchmark urdummlu-humanities --provider openai --model gpt-4o
+urdu-eval run --benchmark urdummlu-social_sciences --provider openai --model gpt-4o
+urdu-eval run --benchmark urdummlu-profession --provider openai --model gpt-4o
 ```
 
 ---
@@ -134,8 +152,40 @@ urdu-eval run --provider mock --benchmark urdu-qa
 UrduEval separates dataset loading, model invocation, linguistic normalization, metric scoring, failure diagnostics, and reporting into clean, decoupled layers:
 
 <div align="center">
-  <img src="assets/architecture.svg" alt="UrduEval Pipeline Architecture" width="100%">
+  <img src="assets/architecture.png" alt="UrduEval Pipeline Architecture" width="100%">
 </div>
+
+---
+
+## 🔤 Linguistic Normalization Profiles
+
+String comparison can artificially depress or inflate LLM scores. UrduEval avoids dangerous global replacements (such as indiscriminately converting Teh Marbuta `ة` $\to$ `ہ`) by providing **explicit, mathematically auditable normalization profiles**:
+
+```bash
+# Evaluate with specific normalization profile
+urdu-eval run --benchmark urdu-qa --provider ollama --model llama3.1 --normalization conservative
+```
+
+| Profile | CLI Flag | Transformations Applied | Best For |
+|---|---|---|---|
+| **Raw** | `--normalization raw` | Exact string stripping only; no character changes | Strict verbatim benchmarks |
+| **Conservative** *(Default)* | `--normalization conservative` | NFC Unicode, Keheh (`ك` $\to$ `ک`), Choti Yeh (`ي` $\to$ `ی`), aerab stripping. **Preserves `ة`, digits, and aspiration `ھ`** | Scientific benchmarks, Academic papers |
+| **Standard** | `--normalization standard` | Conservative + Arabic Heh (`ه` $\to$ `ہ`), Eastern Arabic digit conversion (`۰-۹` $\to$ `0-9`), punctuation harmonization | Practical application testing |
+| **Roman Urdu** | `--normalization roman_urdu` | Lowercasing, punctuation stripping, vowel elongation collapse (`"bohhht"` $\to$ `"boht"`), phonetic cluster grouping | Roman Urdu chatbots & QA |
+
+### Raw vs. Normalized Metrics Side-by-Side
+UrduEval reports unnormalized raw exact match alongside normalized metrics, ensuring complete transparency:
+
+```text
+╭────────────────────────────── Evaluation Metrics ──────────────────────────────╮
+│ Metric                             Score (Normalized)   95% Confidence Interval│
+├────────────────────────────────────────────────────────────────────────────────┤
+│ exact_match                                    60.0%         [35.7% - 82.7%]   │
+│ raw_exact_match (unnormalized)                 53.3%                       —   │
+│ f1                                             78.4%         [58.2% - 91.1%  │
+│ chrF++                                         74.2%         [52.8% - 88.0%]   │
+╰────────────────────────────────────────────────────────────────────────────────╯
+```
 
 ---
 
@@ -145,7 +195,7 @@ Evaluating your own custom Urdu data is a first-class feature in UrduEval. **Zer
 
 ### 1. JSONL Data Format
 
-Prepare a UTF-8 encoded `.jsonl` file where each line is a JSON object matching this schema:
+Prepare a UTF-8 encoded `.jsonl` file:
 
 ```json
 {"id": "custom-001", "prompt": "علامہ اقبال کا تعلق کس شہر سے تھا؟", "reference": "سیالکوٹ", "task": "qa", "script": "urdu"}
@@ -155,19 +205,8 @@ Prepare a UTF-8 encoded `.jsonl` file where each line is a JSON object matching 
 
 ### 2. Validate Dataset Before Running
 
-Validate your dataset for UTF-8 encoding, schema validity, duplicate IDs, and script consistency:
-
 ```bash
 urdu-eval validate my_dataset.jsonl
-```
-
-Output:
-```text
-✓ Encoding: UTF-8 (No BOM)
-✓ Syntax: Valid JSONL (150 samples)
-✓ Schema: All required fields present
-✓ Script Integrity: 100% compliant with declared script
-Dataset is 100% valid and ready for evaluation!
 ```
 
 ### 3. Run Evaluation on Your Dataset
@@ -183,35 +222,13 @@ urdu-eval run \
 
 ---
 
-## 🔤 Normalization & Linguistic Nuance
+## 📊 Comprehensive Metrics & 95% Confidence Intervals
 
-Standard string comparison fails on Urdu. UrduEval includes **conservative, linguistically principled normalizers**:
-
-### Urdu Script Normalization (`urdu_eval.normalization.urdu`)
-1. **Character Harmonization**:
-   - Arabic Kaf (`ك` `\u0643`) ➔ Urdu Kaf (`ک` `\u06a9`)
-   - Arabic Yeh (`ي` `\u064a`) ➔ Urdu Choti Yeh (`ی` `\u06cc`)
-   - Arabic Ta Marbuta (`ة` `\u0629`) ➔ Urdu Gol Heh (`ہ` `\u06c1`)
-   - Do-Chashmi Heh (`ھ` `\u06be`) is strictly preserved for aspirated consonants (`بھ`, `پھ`, `تھ`).
-2. **Aerab / Diacritics Stripping**:
-   - Zabar (`\u064e`), Zer (`\u0650`), Pesh (`\u064f`), Tashdeed (`\u0651`), Jazm (`\u0652`), etc.
-3. **Numerals Normalization**:
-   - Harmonizes Eastern Arabic-Indic numerals (`۰۱۲۳۴۵۶۷۸۹`) with standard Urdu digits (`۰۱۲۳۴۵۶۷۸۹`).
-
-### Roman Urdu Normalization (`urdu_eval.normalization.roman_urdu`)
-- Lowercasing and strip non-alphanumeric punctuation.
-- Vowel elongation collapsing (`"bohhht khooob"` ➔ `"boht khob"`).
-- Phonetic variant grouping (`"khubsurat"` vs `"khoobsurat"` vs `"khubsoorat"`).
-
----
-
-## 📊 Comprehensive Metrics
-
-UrduEval provides specialized evaluation metrics:
+Every metric reported by UrduEval includes **95% Confidence Intervals** (Wilson score intervals for binomial metrics and sample standard error intervals for continuous metrics), making statistical uncertainty explicit:
 
 | Metric | CLI Flag | Best For | Description |
 |---|---|---|---|
-| **Exact Match** | `exact_match` | QA, MCQA | Normalized string equality check |
+| **Exact Match** | `exact_match` | QA, MCQA | Normalized string equality check with Wilson 95% CI |
 | **Token F1** | `f1` | QA, Extraction | Harmonic mean of token precision and recall with Urdu punctuation tokenization |
 | **chrF / chrF++** | `chrf` | Translation, Generation | Character n-gram F-score with word 2-grams (recommended for morphologically rich languages like Urdu) |
 | **BLEU-4** | `bleu` | Translation | Standard 1-to-4 n-gram precision with brevity penalty |
@@ -220,30 +237,28 @@ UrduEval provides specialized evaluation metrics:
 
 ---
 
-## 🔍 Failure Diagnostics & Error Taxonomy
+## 🔍 Task-Specific Failure Diagnostics
 
-UrduEval automatically categorizes every sample result into a principled **failure taxonomy**:
+Rather than arbitrary universal thresholds, UrduEval uses task-aware diagnostic classification:
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                    Sample Evaluation                        │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               ▼                               ▼
-       Metric Pass (≥ 0.8)             Metric Fail (< 0.8)
-               │                               │
-           [Correct]            ┌──────────────┴──────────────┐
-                                ▼                             ▼
-                         Model Refusal                 Linguistic Slip
-                         ("I cannot...")             (Script Drift / Arabization)
-                                │                             │
-                            [Refusal]                  [Wrong Script]
-                                                              │
-                                                ┌─────────────┴─────────────┐
-                                                ▼                           ▼
-                                        Translation Drift           Reasoning Error
-                                      (Target lang mismatch)     (Calculation/Logic slip)
+                              Sample Evaluation Outcome
+                                         │
+                 ┌───────────────────────┴───────────────────────┐
+                 ▼                                               ▼
+         Pass Threshold                                  Fail Threshold
+                 │                                               │
+             [Correct]                    ┌──────────────────────┴──────────────────────┐
+                                          ▼                                             ▼
+                                    Model Refusal                               Linguistic Slip
+                                  ("I cannot...", etc.)                       (Script / Drift)
+                                          │                                             │
+                                      [Refusal]                                  [Wrong Script]
+                                                                                        │
+                                                          ┌─────────────────────────────┴─────────────────────────────┐
+                                                          ▼                                                           ▼
+                                                  Translation Drift                                           Reasoning Error
+                                            (Target language mismatch)                                     (Math / logic step error)
 ```
 
 ---
@@ -253,7 +268,7 @@ UrduEval automatically categorizes every sample result into a principled **failu
 Generate a self-contained, interactive HTML report with search filters, KPI cards, and sample-level inspection:
 
 <div align="center">
-  <img src="assets/report_preview.svg" alt="UrduEval Interactive HTML Report Preview" width="100%">
+  <img src="assets/report_preview.png" alt="UrduEval Interactive HTML Report Preview" width="100%">
 </div>
 
 ```bash
@@ -261,82 +276,47 @@ Generate a self-contained, interactive HTML report with search filters, KPI card
 urdu-eval report results/run_20260917_urdu_qa/scores.json --html results/report.html
 ```
 
-Open `results/report.html` in any web browser. **Zero external JavaScript dependencies, works completely offline.**
+---
+
+## 📊 Development Run Comparison & Leaderboard Protocol
+
+### Sample Verification Results (Development Suite)
+The table below illustrates sample verification results on the built-in development suite ($N=15$). Notice how the **95% Confidence Intervals** clearly reveal sample size uncertainty:
+
+| Model | Provider | Benchmark | Samples | EXACT_MATCH (95% CI) | Token F1 | Mean Latency |
+|---|---|---|:---:|:---:|:---:|:---:|
+| `gpt-4o` | openai | urdu-qa (v0.1.0) | 15 | **80.0%** `[54.8% - 93.0%]` | 89.2% | 320 ms |
+| `claude-3-5-sonnet` | anthropic | urdu-qa (v0.1.0) | 15 | **73.3%** `[48.1% - 89.1%]` | 86.1% | 410 ms |
+| `llama3.1:8b` | ollama | urdu-qa (v0.1.0) | 15 | **60.0%** `[35.7% - 82.7%]` | 78.4% | 142 ms |
+
+> [!IMPORTANT]
+> **Official Leaderboard Eligibility Criteria**:
+> In UrduEval, a benchmark evaluation is only certified for public leaderboard ranking if it satisfies:
+> 1. **Sample Size**: $N \ge 500$ verified test items.
+> 2. **Dataset Version**: Frozen version with recorded SHA-256 cryptographic provenance hash.
+> 3. **Fixed Hyperparameters**: Deterministic decoding (`temperature=0.0`, fixed seed where supported).
+> 4. **Statistical Rigor**: 95% Confidence Intervals reported for all primary metrics.
+> 5. **Diagnostic Transparency**: Full error taxonomy distribution published alongside scalar scores.
 
 ---
 
-## 🏆 Comparative Leaderboard
+## ⚡ Cache Management
 
-UrduEval aggregates runs into a unified comparative leaderboard:
-
-```bash
-urdu-eval leaderboard
-```
-
-```text
-╭──────┬────────────────────────────┬────────────┬─────────────────────┬─────────┬─────────────┬────────┬─────────┬────────────╮
-│ Rank │ Model                      │ Provider   │ Benchmark           │ Samples │ EXACT_MATCH │     F1 │ Latency │ Date       │
-├──────┼────────────────────────────┼────────────┼─────────────────────┼─────────┼─────────────┼────────┼─────────┼────────────┤
-│    1 │ gpt-4o                     │ openai     │ urdu-qa (v0.1.0)    │      15 │       80.0% │  89.2% │   320ms │ 2026-09-17 │
-│    2 │ claude-3-5-sonnet-20241022 │ anthropic  │ urdu-qa (v0.1.0)    │      15 │       73.3% │  86.1% │   410ms │ 2026-09-17 │
-│    3 │ llama3.1:8b                │ ollama     │ urdu-qa (v0.1.0)    │      15 │       60.0% │  78.4% │   142ms │ 2026-09-17 │
-╰──────┴────────────────────────────┴────────────┴─────────────────────┴─────────┴─────────────┴────────┴─────────┴────────────╯
-```
-
-Export in multiple formats for documentation or publications:
+UrduEval features a persistent SQLite cache to prevent redundant API invocations and cost:
 
 ```bash
-urdu-eval leaderboard --format markdown > LEADERBOARD.md
-urdu-eval leaderboard --format csv > leaderboard.csv
-urdu-eval leaderboard --format json > leaderboard.json
-```
+# View cache statistics and database size
+urdu-eval cache stats
 
----
-
-## ⚙️ Automated Experiment Pipelines
-
-Run multi-model, multi-benchmark matrix evaluations using a single YAML configuration:
-
-```yaml
-# experiment.yaml
-experiment:
-  name: "urdu-llm-comparison-2026"
-
-models:
-  - provider: "ollama"
-    model: "llama3.1"
-    temperature: 0.0
-  - provider: "openai"
-    model: "gpt-4o-mini"
-    temperature: 0.0
-
-benchmarks:
-  - "urdu-qa"
-  - "urdu-reasoning"
-  - "urdu-translation"
-
-metrics:
-  - "exact_match"
-  - "f1"
-  - "chrf"
-
-execution:
-  workers: 4
-  cache: true
-  output_dir: "results/matrix"
-```
-
-Execute the entire experiment in one command:
-
-```bash
-urdu-eval experiment experiment.yaml
+# Clear response cache
+urdu-eval cache clear
 ```
 
 ---
 
 ## 🐍 Python Library Usage
 
-UrduEval can also be imported directly as a Python library:
+UrduEval can be imported directly into Python scripts:
 
 ```python
 from urdu_eval.benchmarks import get_benchmark
@@ -348,6 +328,7 @@ model_cfg = ModelConfig(provider="ollama", model="llama3.1", temperature=0.0)
 run_cfg = RunConfig(
     model=model_cfg,
     benchmark_id="urdu-qa",
+    normalization_profile="conservative",
     metrics=["exact_match", "f1", "chrf"],
     workers=4,
 )
@@ -357,10 +338,12 @@ benchmark = get_benchmark("urdu-qa")
 runner = EvaluationRunner(config=run_cfg, benchmark=benchmark)
 result = runner.run()
 
-# 3. Access structured results
+# 3. Access structured results and confidence intervals
 print(f"Total Samples: {result.total_samples}")
-print(f"Exact Match: {result.metrics['exact_match']:.1%}")
-print(f"Token F1:    {result.metrics['f1']:.1%}")
+print(f"Exact Match:   {result.metrics['exact_match']:.1%}")
+if "exact_match" in result.confidence_intervals:
+    low, high = result.confidence_intervals["exact_match"]
+    print(f"95% CI:        [{low:.1%} - {high:.1%}]")
 ```
 
 ---
@@ -379,7 +362,9 @@ print(f"Token F1:    {result.metrics['f1']:.1%}")
 | `urdu-eval inspect <scores.json>` | Inspect individual sample prompts, answers, and error categories |
 | `urdu-eval report <scores.json>` | Generate standalone interactive HTML or Markdown reports |
 | `urdu-eval leaderboard` | Aggregate runs across models into a sorted comparative leaderboard |
-| `urdu-eval clean` | Remove past test run results and reset cache |
+| `urdu-eval cache stats` | View cache hit counts, entries, and database disk usage |
+| `urdu-eval cache clear` | Clear SQLite response cache |
+| `urdu-eval clean` | Remove past test run results and reset local leaderboard |
 | `urdu-eval experiment <config.yaml>` | Run automated multi-model multi-benchmark experiment pipeline |
 
 ---

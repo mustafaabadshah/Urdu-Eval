@@ -28,29 +28,35 @@ def categorize_failure(
     prediction: str,
     metrics: dict[str, float],
 ) -> FailureCategory:
-    """Categorize prediction outcome into a standardized failure category.
+    """Categorize prediction outcome into a principled, task-aware error taxonomy.
 
-    Does not modify scores; provides reproducible error taxonomy.
+    Uses task- and metric-specific thresholds rather than arbitrary universal cutoffs.
+    Does not modify scores; provides reproducible diagnostic classifications.
     """
-    # 1. Check if prediction is correct according to primary metrics
+    clean_pred = prediction.strip()
     em = metrics.get("exact_match", 0.0)
-    f1 = metrics.get("f1", 0.0)
     acc = metrics.get("accuracy", 0.0)
+    f1 = metrics.get("f1", 0.0)
+    chrf = metrics.get("chrf", metrics.get("chrf++", 0.0))
+    bleu = metrics.get("bleu", 0.0)
+    rouge_l = metrics.get("rouge-l", metrics.get("rouge_l", 0.0))
+    judge = metrics.get("judge", 0.0)
 
-    if em >= 1.0 or acc >= 1.0 or f1 >= 0.99:
-        return FailureCategory.CORRECT
-
-    # 2. Check for refusal
-    if REFUSAL_REGEX.search(prediction):
+    # 1. Check for Model Refusal across English and Urdu refusal signals
+    if REFUSAL_REGEX.search(clean_pred):
         return FailureCategory.REFUSAL
 
-    # 3. Check for Script Violations
-    has_urdu_chars = bool(URDU_SCRIPT_REGEX.search(prediction))
-    has_latin_chars = bool(re.search(r"[a-zA-Z]", prediction))
+    # 2. Check for Script Compliance & Language Drift
+    has_urdu_chars = bool(URDU_SCRIPT_REGEX.search(clean_pred))
+    has_latin_chars = bool(re.search(r"[a-zA-Z]", clean_pred))
 
-    # Determine if Latin is expected (e.g. urdu_to_english translation or latin script)
     expects_latin = (
-        sample.script == Script.LATIN or sample.direction == TranslationDirection.URDU_TO_ENGLISH
+        sample.script == Script.LATIN
+        or sample.direction == TranslationDirection.URDU_TO_ENGLISH
+        or (
+            sample.task == TaskType.TRANSLATION
+            and sample.direction == TranslationDirection.URDU_TO_ENGLISH
+        )
     )
 
     if sample.script == Script.URDU and not expects_latin:
@@ -60,23 +66,72 @@ def categorize_failure(
         if has_urdu_chars:
             return FailureCategory.WRONG_SCRIPT
 
-        # Check Roman Urdu spelling variation
+        # Check for Roman Urdu spelling variation
         ref_texts = [sample.reference] if isinstance(sample.reference, str) else sample.reference
-        pred_words = prediction.strip().split()
+        pred_words = clean_pred.split()
         if len(pred_words) == 1:
             for ref_item in ref_texts:
-                if are_roman_urdu_variants(prediction.strip(), ref_item.strip()):
+                if are_roman_urdu_variants(clean_pred, str(ref_item).strip()):
                     return FailureCategory.ROMAN_URDU_SPELLING
 
-    # 4. Check for partial correctness
-    if 0.2 <= f1 < 0.99:
-        return FailureCategory.PARTIAL
+    # 3. Task-Specific Diagnostic Thresholds
+    # A. Question Answering / MMLU
+    if sample.task in (TaskType.QA, TaskType.MMLU):
+        if em >= 1.0 or acc >= 1.0:
+            return FailureCategory.CORRECT
+        if f1 >= 0.75:
+            return FailureCategory.CORRECT
+        if 0.25 <= f1 < 0.75:
+            return FailureCategory.PARTIAL
+        return FailureCategory.INCORRECT
 
-    # 5. Task-specific failure categories
+    # B. Translation
+    if sample.task == TaskType.TRANSLATION:
+        # Check translation drift (echoing prompt language instead of translating)
+        if (
+            sample.direction == TranslationDirection.URDU_TO_ENGLISH
+            and has_urdu_chars
+            and not has_latin_chars
+        ):
+            return FailureCategory.TRANSLATION_DRIFT
+        if (
+            sample.direction == TranslationDirection.ENGLISH_TO_URDU
+            and has_latin_chars
+            and not has_urdu_chars
+        ):
+            return FailureCategory.TRANSLATION_DRIFT
+
+        # Metric thresholds for translation
+        if chrf >= 0.65 or bleu >= 0.50:
+            return FailureCategory.CORRECT
+        if chrf >= 0.35 or bleu >= 0.20:
+            return FailureCategory.PARTIAL
+        return (
+            FailureCategory.TRANSLATION_DRIFT
+            if (chrf < 0.20 and bleu < 0.10)
+            else FailureCategory.INCORRECT
+        )
+
+    # C. Multi-Step Reasoning
     if sample.task == TaskType.REASONING:
+        if em >= 1.0 or acc >= 1.0:
+            return FailureCategory.CORRECT
+        if f1 >= 0.80:
+            return FailureCategory.CORRECT
         return FailureCategory.REASONING_ERROR
 
-    if sample.task == TaskType.TRANSLATION:
-        return FailureCategory.TRANSLATION_DRIFT
+    # D. Summarization
+    if sample.task == TaskType.SUMMARIZATION:
+        if rouge_l >= 0.55 or f1 >= 0.60:
+            return FailureCategory.CORRECT
+        if 0.25 <= rouge_l < 0.55:
+            return FailureCategory.PARTIAL
+        return FailureCategory.INCORRECT
+
+    # E. General Fallback
+    if em >= 1.0 or acc >= 1.0 or judge >= 0.80 or f1 >= 0.80:
+        return FailureCategory.CORRECT
+    if f1 >= 0.30 or judge >= 0.40:
+        return FailureCategory.PARTIAL
 
     return FailureCategory.INCORRECT

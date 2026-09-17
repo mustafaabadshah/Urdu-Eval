@@ -135,6 +135,12 @@ def run_command(
     max_samples: int | None = typer.Option(
         None, "--max-samples", "-n", help="Limit number of samples"
     ),
+    normalization: str = typer.Option(
+        "conservative",
+        "--normalization",
+        "-N",
+        help="Normalization profile: raw, conservative, standard, roman_urdu",
+    ),
     output_dir: str = typer.Option("results", "--output", "-o", help="Directory for run results"),
 ) -> None:
     """Run an evaluation benchmark against a model."""
@@ -167,6 +173,7 @@ def run_command(
         benchmark_id=bm.metadata.id,
         dataset_path=str(dataset) if dataset else None,
         metrics=parsed_metrics,
+        normalization_profile=normalization,
         use_cache=cache,
         workers=workers,
         max_samples=max_samples,
@@ -441,3 +448,44 @@ def experiment_command(
 
     console.print("\n[bold green]Experiment Complete![/bold green]")
     render_comparison_table(run_results)
+
+
+cache_app = typer.Typer(help="Inspect and manage SQLite response cache")
+app.add_typer(cache_app, name="cache")
+
+
+@cache_app.command(name="stats")
+def cache_stats_command(
+    cache_dir: Path = typer.Option(Path(".urdu_eval_cache"), "--dir", help="Cache directory"),
+) -> None:
+    """Display SQLite response cache statistics and storage size."""
+    from urdu_eval.runner.cache import EvaluationCache
+
+    cache = EvaluationCache(cache_dir)
+    stats = cache.get_stats()
+    console.print("[bold cyan]UrduEval Response Cache Stats:[/bold cyan]")
+    console.print(f"  • Total Entries:  [bold green]{stats['total_entries']}[/bold green]")
+    console.print(f"  • Providers:      [bold]{stats['providers']}[/bold]")
+    console.print(f"  • Models:         [bold]{stats['models']}[/bold]")
+    console.print(
+        f"  • SQLite DB File: [dim]{stats['db_path']}[/dim] ({stats['db_size_bytes'] / 1024:.1f} KB)"
+    )
+
+
+@cache_app.command(name="clear")
+def cache_clear_command(
+    cache_dir: Path = typer.Option(Path(".urdu_eval_cache"), "--dir", help="Cache directory"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
+) -> None:
+    """Clear all cached model responses to ensure clean API evaluation."""
+    from urdu_eval.runner.cache import EvaluationCache
+
+    if not force:
+        confirm = typer.confirm("Are you sure you want to clear all cached responses?")
+        if not confirm:
+            console.print("[dim]Aborted.[/dim]")
+            return
+
+    cache = EvaluationCache(cache_dir)
+    cache.clear()
+    console.print("[bold green]Cache cleared successfully.[/bold green]")

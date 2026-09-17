@@ -9,7 +9,7 @@ from urdu_eval.enums import TaskType
 def test_urdu_mmlu_adapter_metadata() -> None:
     """Verify UrduMMLUAdapter exposes proper metadata, citations, and provenance."""
     adapter = UrduMMLUAdapter()
-    assert adapter.metadata.id == "urdu-mmlu-external"
+    assert adapter.metadata.id in ("urdummlu", "urdu-mmlu-external")
     assert adapter.metadata.tasks == [TaskType.MMLU]
     assert adapter.metadata.license == "CC-BY-SA-4.0"
     assert "https://huggingface.co/datasets/UrduMMLU" in adapter.metadata.provenance

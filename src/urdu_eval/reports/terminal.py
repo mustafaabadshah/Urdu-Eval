@@ -66,18 +66,33 @@ def render_run_summary(run_result: RunResult) -> None:
     # Metrics Table
     console.print()
     metric_table = Table(
-        title="Evaluation Metrics",
+        title="Evaluation Metrics (with 95% Confidence Intervals)",
         box=ROUNDED,
         border_style="cyan",
         header_style="bold magenta",
     )
     metric_table.add_column("Metric", style="bold white")
-    metric_table.add_column("Score", justify="right", style="bold green")
-    metric_table.add_column("Percentage", justify="right", style="cyan")
+    metric_table.add_column("Score (Normalized)", justify="right", style="bold green")
+    metric_table.add_column("95% Confidence Interval", justify="center", style="dim cyan")
+    metric_table.add_column("Status", justify="center", style="green")
 
     for m_name, score in run_result.metrics.items():
-        pct = f"{score * 100:.1f}%" if 0.0 <= score <= 1.0 else "N/A"
-        metric_table.add_row(m_name, f"{score:.4f}", pct)
+        pct = f"{score * 100:.1f}%" if 0.0 <= score <= 1.0 else f"{score:.4f}"
+        ci_str = "—"
+        if m_name in run_result.confidence_intervals:
+            low, high = run_result.confidence_intervals[m_name]
+            ci_str = f"[{low * 100:.1f}% - {high * 100:.1f}%]"
+        metric_table.add_row(m_name, pct, ci_str, "✓ Evaluated")
+
+    if run_result.raw_metrics.get("raw_exact_match") is not None:
+        raw_em = run_result.raw_metrics["raw_exact_match"]
+        metric_table.add_row(
+            "[dim]raw_exact_match (unnormalized)[/dim]",
+            f"[dim]{raw_em * 100:.1f}%[/dim]",
+            "—",
+            "[dim]baseline[/dim]",
+        )
+
     console.print(metric_table)
 
     # Failure Analysis Table

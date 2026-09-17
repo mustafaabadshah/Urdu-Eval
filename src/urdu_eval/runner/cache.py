@@ -105,3 +105,29 @@ class EvaluationCache:
         with self._connect() as conn:
             conn.execute("DELETE FROM response_cache")
             conn.commit()
+
+    def count(self) -> int:
+        """Return total number of cached responses."""
+        with self._connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM response_cache")
+            row = cursor.fetchone()
+            return int(row[0]) if row else 0
+
+    def get_stats(self) -> dict[str, Any]:
+        """Return summary cache statistics."""
+        with self._connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT COUNT(*), COUNT(DISTINCT provider), COUNT(DISTINCT model) FROM response_cache"
+            )
+            row = cursor.fetchone()
+            total, providers, models = row if row else (0, 0, 0)
+            db_size = self.db_path.stat().st_size if self.db_path.exists() else 0
+            return {
+                "total_entries": total,
+                "providers": providers,
+                "models": models,
+                "db_size_bytes": db_size,
+                "db_path": str(self.db_path),
+            }

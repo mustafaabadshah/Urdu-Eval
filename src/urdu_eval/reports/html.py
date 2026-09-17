@@ -15,10 +15,15 @@ def generate_html_report(run_result: RunResult) -> str:
     metric_cards_html = ""
     for m_name, score in run_result.metrics.items():
         pct = f"{score * 100:.1f}%" if 0.0 <= score <= 1.0 else f"{score:.2f}"
+        ci_str = ""
+        if m_name in run_result.confidence_intervals:
+            low, high = run_result.confidence_intervals[m_name]
+            ci_str = f'<div class="metric-ci" style="font-size:11px; color:#38bdf8; margin-top:4px; font-weight:600;">95% CI: [{low * 100:.1f}% - {high * 100:.1f}%]</div>'
         metric_cards_html += f"""
         <div class="metric-card">
             <div class="metric-title">{html.escape(m_name.upper())}</div>
             <div class="metric-score">{pct}</div>
+            {ci_str}
             <div class="metric-raw">Scalar: {score:.4f}</div>
         </div>
         """

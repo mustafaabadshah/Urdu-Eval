@@ -46,8 +46,23 @@ def get_benchmark(benchmark_id: str) -> Benchmark:
     """Retrieve a benchmark by ID."""
     _ensure_builtin_benchmarks()
     bid = benchmark_id.lower()
+
+    if bid in {"urdummlu", "urdu-mmlu-external"}:
+        from urdu_eval.benchmarks.adapters.urdu_mmlu import UrduMMLUAdapter
+
+        return UrduMMLUAdapter()
+
+    if bid.startswith("urdummlu-"):
+        from urdu_eval.benchmarks.adapters.urdu_mmlu import UrduMMLUAdapter
+
+        domain = bid.split("-", 1)[1]
+        return UrduMMLUAdapter(domain=domain)
+
     if bid not in _BENCHMARK_REGISTRY:
-        available = ", ".join(sorted(_BENCHMARK_REGISTRY.keys()))
+        available = ", ".join(
+            sorted(_BENCHMARK_REGISTRY.keys())
+            + ["urdummlu", "urdummlu-stem", "urdummlu-humanities"]
+        )
         raise ValueError(
             f"Benchmark '{benchmark_id}' was not found. Available benchmarks:\n  {available}"
         )
