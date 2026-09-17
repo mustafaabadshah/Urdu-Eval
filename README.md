@@ -4,7 +4,7 @@
 
 <br/>
 
-[![PyPI Version](https://img.shields.io/badge/pypi-v0.1.1-blue.svg?logo=pypi&logoColor=white)](https://pypi.org/project/urdu-eval/)
+[![PyPI Version](https://img.shields.io/badge/pypi-v0.1.2-blue.svg?logo=pypi&logoColor=white)](https://pypi.org/project/urdu-eval/)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-80%20passed-10B981.svg)](tests/)

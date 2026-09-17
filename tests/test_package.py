@@ -4,8 +4,8 @@ import urdu_eval
 
 
 def test_package_version() -> None:
-    """Verify package version is set to 0.1.1."""
-    assert urdu_eval.__version__ == "0.1.1"
+    """Verify package version is set to 0.1.2."""
+    assert urdu_eval.__version__ == "0.1.2"
 
 
 def test_package_metadata() -> None:

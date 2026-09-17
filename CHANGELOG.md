@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-09-17
+
+### Fixed
+- Fixed Urdu text shaping and font rendering in documentation visual assets (`assets/banner.png` and `assets/report_preview.png`). Every Urdu word now connects properly using contextual OpenType cursive letterforms (initial, medial, final, and isolated glyphs) via `arabic-reshaper` and `python-bidi`.
+- Eliminated bidirectional parenthesis mirroring anomalies in report preview cards by introducing clean pipe (`|`) field separators and dynamic font boundary metrics.
+- Re-spaced bottom KPI cards on `assets/banner.png` to prevent text truncation or overlap across columns.
+
 ## [0.1.1] - 2026-09-17
 
 ### Added
