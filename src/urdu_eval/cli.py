@@ -329,6 +329,12 @@ def leaderboard_command(
     script: str | None = typer.Option(
         None, "--script", "-s", help="Filter by script (urdu, roman_urdu)"
     ),
+    all_runs: bool = typer.Option(
+        False,
+        "--all-runs",
+        "-a",
+        help="Include all historical runs instead of only the latest per model/benchmark",
+    ),
     format_type: str = typer.Option(
         "table", "--format", help="Output format: table, markdown, csv, json"
     ),
@@ -339,6 +345,7 @@ def leaderboard_command(
         benchmark_id=benchmark,
         task=task,
         script=script,
+        latest_only=not all_runs,
     )
 
     fmt = format_type.lower()
@@ -353,6 +360,30 @@ def leaderboard_command(
     else:
         console.print(f"[bold red]Unsupported format:[/bold red] {format_type}")
         raise typer.Exit(code=1)
+
+
+@app.command(name="clean")
+def clean_command(
+    results_dir: Path = typer.Argument(
+        Path("results"), help="Directory containing evaluation runs to remove"
+    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Force deletion without confirmation"),
+) -> None:
+    """Remove evaluation run results to reset local leaderboard."""
+    import shutil
+
+    if not results_dir.exists():
+        console.print(f"[yellow]Directory does not exist:[/yellow] {results_dir}")
+        return
+
+    if not force:
+        confirm = typer.confirm(f"Are you sure you want to delete all runs in '{results_dir}'?")
+        if not confirm:
+            console.print("[dim]Aborted.[/dim]")
+            return
+
+    shutil.rmtree(results_dir)
+    console.print(f"[bold green]Cleaned:[/bold green] Deleted {results_dir}")
 
 
 @app.command(name="experiment")

@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" width="100%" height="520">
+  <defs>
+    <linearGradient id="header-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <style>
+      .browser-bar { fill: #1E293B; }
+      .browser-url { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; fill: #94A3B8; }
+      .report-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 20px; font-weight: 800; fill: #F8FAFC; }
+      .report-meta { font-family: ui-monospace, monospace; font-size: 11px; fill: #64748B; }
+      .stat-val { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 22px; font-weight: 800; fill: #38BDF8; }
+      .stat-lbl { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; font-weight: 600; fill: #94A3B8; text-transform: uppercase; }
+      .urdu-txt { font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", serif; font-size: 15px; fill: #E2E8F0; direction: rtl; }
+      .sample-title { font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; fill: #38BDF8; }
+    </style>
+  </defs>
+
+  <g filter="url(#shadow)" transform="translate(10, 10)">
+    <!-- Browser Chrome Frame -->
+    <rect width="900" height="500" rx="10" fill="#0B0F19" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Browser URL Bar -->
+    <rect width="900" height="42" rx="10" fill="#1E293B"/>
+    <rect width="900" height="2" y="40" fill="#334155"/>
+    <circle cx="24" cy="21" r="5.5" fill="#EF4444"/>
+    <circle cx="42" cy="21" r="5.5" fill="#F59E0B"/>
+    <circle cx="60" cy="21" r="5.5" fill="#10B981"/>
+
+    <!-- Address bar pill -->
+    <rect width="520" height="26" x="190" y="8" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+    <text x="450" y="25" text-anchor="middle" class="browser-url">file:///results/report.html — UrduEval Standalone Interactive Report</text>
+
+    <!-- Report Header -->
+    <g transform="translate(30, 68)">
+      <text x="0" y="0" class="report-title">UrduEval Run Diagnostics Report</text>
+      <text x="0" y="20" class="report-meta">Run ID: run_20260917_urdu_qa | Benchmark: urdu-qa (v0.1.0) | Model: llama3.1 (ollama)</text>
+    </g>
+
+    <!-- Top KPI Cards -->
+    <g transform="translate(30, 110)">
+      <!-- Card 1: Exact Match -->
+      <g transform="translate(0, 0)">
+        <rect width="195" height="74" rx="8" fill="#131C31" stroke="#1E293B" stroke-width="1"/>
+        <text x="16" y="32" class="stat-val" fill="#10B981">60.0%</text>
+        <text x="16" y="54" class="stat-lbl">Exact Match</text>
+      </g>
+
+      <!-- Card 2: Token F1 -->
+      <g transform="translate(215, 0)">
+        <rect width="195" height="74" rx="8" fill="#131C31" stroke="#1E293B" stroke-width="1"/>
+        <text x="16" y="32" class="stat-val" fill="#38BDF8">78.4%</text>
+        <text x="16" y="54" class="stat-lbl">Token F1</text>
+      </g>
+
+      <!-- Card 3: chrF++ -->
+      <g transform="translate(430, 0)">
+        <rect width="195" height="74" rx="8" fill="#131C31" stroke="#1E293B" stroke-width="1"/>
+        <text x="16" y="32" class="stat-val" fill="#F59E0B">74.2%</text>
+        <text x="16" y="54" class="stat-lbl">chrF++</text>
+      </g>
+
+      <!-- Card 4: Mean Latency -->
+      <g transform="translate(645, 0)">
+        <rect width="195" height="74" rx="8" fill="#131C31" stroke="#1E293B" stroke-width="1"/>
+        <text x="16" y="32" class="stat-val" fill="#E2E8F0">142 ms</text>
+        <text x="16" y="54" class="stat-lbl">Mean Latency</text>
+      </g>
+    </g>
+
+    <!-- Interactive Filter Toolbar -->
+    <g transform="translate(30, 204)">
+      <!-- Search Input -->
+      <rect width="320" height="34" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <text x="16" y="22" font-family="sans-serif" font-size="12" fill="#64748B">🔍 Search samples by keyword, ID...</text>
+
+      <!-- Filter Pills -->
+      <g transform="translate(340, 0)">
+        <rect width="60" height="34" rx="6" fill="#10B981"/>
+        <text x="30" y="21" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#06281E">All (15)</text>
+
+        <rect width="90" height="34" x="70" rx="6" fill="#1E293B" stroke="#334155"/>
+        <text x="115" y="21" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#E2E8F0">Correct (9)</text>
+
+        <rect width="125" height="34" x="170" rx="6" fill="#1E293B" stroke="#334155"/>
+        <text x="232" y="21" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#E2E8F0">Reasoning Err (3)</text>
+
+        <rect width="105" height="34" x="305" rx="6" fill="#1E293B" stroke="#334155"/>
+        <text x="357" y="21" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#E2E8F0">Wrong Script (1)</text>
+
+        <rect width="85" height="34" x="420" rx="6" fill="#1E293B" stroke="#334155"/>
+        <text x="462" y="21" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#E2E8F0">Refusal (1)</text>
+      </g>
+    </g>
+
+    <!-- Sample Inspection Card 1 -->
+    <g transform="translate(30, 258)">
+      <rect width="840" height="98" rx="8" fill="#111827" stroke="#1E293B" stroke-width="1"/>
+      <rect width="4" height="98" rx="2" fill="#10B981"/>
+
+      <!-- Header row of card -->
+      <text x="18" y="24" class="sample-title">#SAMPLE: urdu-qa-001</text>
+      <rect width="70" height="20" x="180" y="10" rx="4" fill="#06281E" stroke="#10B981"/>
+      <text x="215" y="24" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#34D399">CORRECT</text>
+
+      <text x="820" y="24" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" fill="#64748B">EM: 1.0  |  F1: 1.0  |  128ms</text>
+
+      <!-- Prompt and response preview -->
+      <text x="18" y="52" font-family="sans-serif" font-size="12" fill="#94A3B8">Input Prompt: <tspan class="urdu-txt">پاکستان کا دارالحکومت کون سا شہر ہے؟</tspan></text>
+      <text x="18" y="78" font-family="sans-serif" font-size="12" fill="#94A3B8">Model Output: <tspan fill="#34D399" font-weight="600">اسلام آباد</tspan> <tspan class="report-meta">(Matches reference: اسلام آباد)</tspan></text>
+    </g>
+
+    <!-- Sample Inspection Card 2 (Reasoning Error) -->
+    <g transform="translate(30, 368)">
+      <rect width="840" height="98" rx="8" fill="#111827" stroke="#1E293B" stroke-width="1"/>
+      <rect width="4" height="98" rx="2" fill="#F59E0B"/>
+
+      <!-- Header row of card -->
+      <text x="18" y="24" class="sample-title">#SAMPLE: urdu-reasoning-004</text>
+      <rect width="120" height="20" x="220" y="10" rx="4" fill="#2D1A05" stroke="#F59E0B"/>
+      <text x="280" y="24" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#FBBF24">REASONING ERROR</text>
+
+      <text x="820" y="24" text-anchor="end" font-family="ui-monospace, monospace" font-size="11" fill="#64748B">EM: 0.0  |  F1: 0.33  |  186ms</text>
+
+      <!-- Prompt and response preview -->
+      <text x="18" y="52" font-family="sans-serif" font-size="12" fill="#94A3B8">Input Prompt: <tspan class="urdu-txt">اگر احمد کے پاس ۵ سیب ہیں اور وہ ۲ کھا لیتا ہے، تو کتنے باقی ہیں؟</tspan></text>
+      <text x="18" y="78" font-family="sans-serif" font-size="12" fill="#94A3B8">Model Output: <tspan fill="#F87171">احمد کے پاس ۲ سیب باقی ہیں</tspan> <tspan class="report-meta">(Expected: ۳ سیب)</tspan></text>
+    </g>
+  </g>
+</svg>

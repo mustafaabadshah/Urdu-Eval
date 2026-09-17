@@ -13,6 +13,7 @@ def build_leaderboard(
     benchmark_id: str | None = None,
     task: str | None = None,
     script: str | None = None,
+    latest_only: bool = True,
 ) -> list[LeaderboardEntry]:
     """Scan results directory, collect scores.json runs, and build leaderboard entries."""
     path = Path(results_dir)
@@ -58,6 +59,15 @@ def build_leaderboard(
             entries.append(entry)
         except Exception:
             continue
+
+    if latest_only:
+        # Group by (model, benchmark_id) and keep latest run by run_id/timestamp
+        latest_map: dict[tuple[str, str], LeaderboardEntry] = {}
+        for entry in entries:
+            key = (entry.model, entry.benchmark_id)
+            if key not in latest_map or entry.run_id > latest_map[key].run_id:
+                latest_map[key] = entry
+        entries = list(latest_map.values())
 
     # Sort entries by primary metric (e.g., exact_match, accuracy, or f1) descending
     def sort_key(e: LeaderboardEntry) -> float:

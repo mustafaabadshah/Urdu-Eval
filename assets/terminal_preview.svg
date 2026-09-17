@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <defs>
+    <linearGradient id="term-header" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+
+    <filter id="term-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <style>
+      .term-cmd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; fill: #F8FAFC; }
+      .term-green { fill: #10B981; font-weight: bold; }
+      .term-cyan { fill: #06B6D4; }
+      .term-yellow { fill: #F59E0B; }
+      .term-magenta { fill: #EC4899; }
+      .term-dim { fill: #64748B; }
+      .term-bold { font-weight: bold; fill: #FFFFFF; }
+      .term-urdu { font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", sans-serif; fill: #34D399; }
+    </style>
+  </defs>
+
+  <!-- Window Container with Shadow -->
+  <g filter="url(#term-shadow)" transform="translate(10, 10)">
+    <!-- Main Window Background -->
+    <rect width="900" height="520" rx="12" fill="#0A0E17" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Terminal Window Header -->
+    <rect width="900" height="42" rx="12" fill="url(#term-header)"/>
+    <rect width="900" height="2" y="40" fill="#334155"/>
+
+    <!-- Window Dots (macOS style) -->
+    <circle cx="24" cy="21" r="6" fill="#EF4444"/>
+    <circle cx="44" cy="21" r="6" fill="#F59E0B"/>
+    <circle cx="64" cy="21" r="6" fill="#10B981"/>
+
+    <!-- Terminal Title -->
+    <text x="450" y="26" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" font-size="12" fill="#94A3B8" font-weight="600">urdu-eval — bash — 900x520</text>
+
+    <!-- Terminal Content Area -->
+    <g transform="translate(26, 74)">
+      <!-- Command prompt line -->
+      <text x="0" y="0" class="term-cmd">
+        <tspan class="term-green">researcher@ai-node</tspan><tspan class="term-dim">:</tspan><tspan class="term-cyan">~/urdu-eval</tspan><tspan class="term-bold">$ </tspan><tspan fill="#F8FAFC">urdu-eval run --provider ollama --model llama3.1 --benchmark urdu-qa</tspan>
+      </text>
+
+      <!-- Banner Line -->
+      <g transform="translate(0, 24)">
+        <text x="0" y="0" class="term-cmd">
+          <tspan class="term-green">╭─ UrduEval v0.1.0 ─────────────────────────────────────────────╮</tspan>
+        </text>
+        <text x="0" y="18" class="term-cmd">
+          <tspan class="term-green">│ </tspan><tspan class="term-bold">Provider: </tspan><tspan class="term-cyan">ollama</tspan><tspan class="term-dim"> | </tspan><tspan class="term-bold">Model: </tspan><tspan class="term-yellow">llama3.1</tspan><tspan class="term-dim"> | </tspan><tspan class="term-bold">Benchmark: </tspan><tspan class="term-magenta">urdu-qa</tspan><tspan class="term-dim"> (15 samples) </tspan><tspan class="term-green">│</tspan>
+        </text>
+        <text x="0" y="36" class="term-cmd">
+          <tspan class="term-green">╰──────────────────────────────────────────────────────────────╯</tspan>
+        </text>
+      </g>
+
+      <!-- Progress Bar -->
+      <g transform="translate(0, 84)">
+        <text x="0" y="0" class="term-cmd">
+          <tspan fill="#E2E8F0">Evaluating samples: </tspan>
+          <tspan class="term-green">100% </tspan>
+          <tspan class="term-cyan">[━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━] </tspan>
+          <tspan fill="#E2E8F0">15/15 </tspan>
+          <tspan class="term-dim">[00:02 &lt; 00:00, 6.4 it/s]</tspan>
+        </text>
+      </g>
+
+      <!-- Results Table -->
+      <g transform="translate(0, 120)">
+        <rect width="848" height="150" rx="6" fill="#0F172A" stroke="#1E293B" stroke-width="1"/>
+        
+        <!-- Table Header -->
+        <line x1="0" y1="36" x2="848" y2="36" stroke="#334155" stroke-width="1"/>
+        <text x="20" y="24" class="term-cmd term-bold">Metric</text>
+        <text x="240" y="24" class="term-cmd term-bold">Score</text>
+        <text x="440" y="24" class="term-cmd term-bold">Confidence Interval</text>
+        <text x="680" y="24" class="term-cmd term-bold">Status</text>
+
+        <!-- Row 1: Exact Match -->
+        <text x="20" y="60" class="term-cmd">Exact Match</text>
+        <text x="240" y="60" class="term-cmd term-green">60.0%</text>
+        <text x="440" y="60" class="term-cmd term-dim">[35.7% - 82.7%]</text>
+        <text x="680" y="60" class="term-cmd term-green">✓ Evaluated</text>
+
+        <!-- Row 2: Token F1 -->
+        <text x="20" y="88" class="term-cmd">Token F1</text>
+        <text x="240" y="88" class="term-cmd term-cyan">78.4%</text>
+        <text x="440" y="88" class="term-cmd term-dim">[58.2% - 91.1%]</text>
+        <text x="680" y="88" class="term-cmd term-green">✓ Evaluated</text>
+
+        <!-- Row 3: chrF++ -->
+        <text x="20" y="116" class="term-cmd">chrF++</text>
+        <text x="240" y="116" class="term-cmd term-yellow">74.2%</text>
+        <text x="440" y="116" class="term-cmd term-dim">[52.8% - 88.0%]</text>
+        <text x="680" y="116" class="term-cmd term-green">✓ Evaluated</text>
+
+        <!-- Row 4: Latency -->
+        <text x="20" y="142" class="term-cmd">Average Latency</text>
+        <text x="240" y="142" class="term-cmd">142 ms</text>
+        <text x="440" y="142" class="term-cmd term-dim">p95: 198 ms</text>
+        <text x="680" y="142" class="term-cmd term-dim">—</text>
+      </g>
+
+      <!-- Failure Analysis Diagnostics -->
+      <g transform="translate(0, 290)">
+        <text x="0" y="0" class="term-cmd">
+          <tspan class="term-bold">Failure Taxonomy Breakdown:</tspan>
+        </text>
+        <text x="0" y="22" class="term-cmd">
+          <tspan class="term-green">  • Correct: </tspan><tspan fill="#E2E8F0">9 (60.0%)</tspan>
+          <tspan class="term-yellow">   | Reasoning Error: </tspan><tspan fill="#E2E8F0">3 (20.0%)</tspan>
+          <tspan fill="#F87171">   | Wrong Script: </tspan><tspan fill="#E2E8F0">1 (6.7%)</tspan>
+          <tspan class="term-magenta">   | Refusal: </tspan><tspan fill="#E2E8F0">1 (6.7%)</tspan>
+          <tspan fill="#A78BFA">   | Language Drift: </tspan><tspan fill="#E2E8F0">1 (6.7%)</tspan>
+        </text>
+      </g>
+
+      <!-- Output links and footer -->
+      <g transform="translate(0, 344)">
+        <text x="0" y="0" class="term-cmd">
+          <tspan class="term-green">✓ </tspan><tspan fill="#E2E8F0">Checkpoint saved: </tspan><tspan class="term-cyan">results/run_20260917_urdu_qa/scores.json</tspan>
+        </text>
+        <text x="0" y="24" class="term-cmd">
+          <tspan class="term-green">✓ </tspan><tspan fill="#E2E8F0">Standalone HTML report generated: </tspan><tspan class="term-yellow">results/report.html</tspan>
+        </text>
+      </g>
+
+      <!-- Next prompt -->
+      <g transform="translate(0, 396)">
+        <text x="0" y="0" class="term-cmd">
+          <tspan class="term-green">researcher@ai-node</tspan><tspan class="term-dim">:</tspan><tspan class="term-cyan">~/urdu-eval</tspan><tspan class="term-bold">$ </tspan><tspan class="term-cyan">urdu-eval leaderboard</tspan>
+          <tspan fill="#10B981"> ▋</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>
